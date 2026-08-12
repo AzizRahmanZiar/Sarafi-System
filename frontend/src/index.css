@@ -1,0 +1,55 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    font-family: 'Inter', sans-serif;
+    background-color: rgb(249 250 251);
+    color: rgb(17 24 39);
+  }
+}
+
+.dark body {
+  background-color: rgb(17 24 39);
+  color: rgb(243 244 246);
+}
+
+@layer components {
+  .quick-action-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem 1.25rem;
+    border-width: 2px;
+    border-color: rgb(229 231 235);
+    border-radius: 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: rgb(17 24 39);
+    transition: all 0.2s;
+    width: 100%;
+  }
+  
+  .dark .quick-action-btn {
+    border-color: rgb(55 65 81);
+    color: rgb(243 244 246);
+  }
+  
+  .quick-action-btn:hover {
+    border-color: #6366f1;
+    background-color: rgb(238 242 255);
+    transform: translateX(4px);
+  }
+  
+  .dark .quick-action-btn:hover {
+    background-color: rgb(31 41 55);
+  }
+  
+  .quick-action-btn svg {
+    color: #6366f1;
+    font-size: 1.5rem;
+  }
+}
