@@ -3,6 +3,9 @@ import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 import Backend from 'i18next-http-backend';
 
+// Define supported languages
+const supportedLngs = ['en', 'ps', 'dr'];
+
 export const i18nPromise = i18n
   .use(Backend)
   .use(LanguageDetector)
@@ -10,6 +13,7 @@ export const i18nPromise = i18n
   .init({
     fallbackLng: 'en',
     debug: process.env.NODE_ENV === 'development',
+    supportedLngs: supportedLngs,
     interpolation: {
       escapeValue: false,
     },
@@ -19,6 +23,7 @@ export const i18nPromise = i18n
     detection: {
       order: ['localStorage', 'navigator'],
       caches: ['localStorage'],
+      lookupLocalStorage: 'i18nextLng',
     },
     react: {
       useSuspense: false,
@@ -32,11 +37,8 @@ export const i18nPromise = i18n
 // Handle language code normalization
 i18n.on('languageChanged', (lng) => {
   const normalizedLng = lng.split('-')[0];
-  if (normalizedLng !== lng) {
-    const supportedLanguages = ['en', 'ps', 'dr'];
-    if (supportedLanguages.includes(normalizedLng)) {
-      i18n.changeLanguage(normalizedLng);
-    }
+  if (normalizedLng !== lng && supportedLngs.includes(normalizedLng)) {
+    i18n.changeLanguage(normalizedLng);
   }
 });
 

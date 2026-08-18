@@ -58,6 +58,7 @@ function App() {
             const lng = i18n.language || 'en';
             document.documentElement.dir = lng === 'ps' || lng === 'dr' ? 'rtl' : 'ltr';
             document.documentElement.lang = lng;
+            document.body.dir = lng === 'ps' || lng === 'dr' ? 'rtl' : 'ltr';
         });
     }, []);
 

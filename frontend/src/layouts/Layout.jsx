@@ -1,10 +1,18 @@
 import { Outlet } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
+import { useLanguage } from "../context/LanguageContext";
 
 export default function Layout() {
+    const { isRTL, renderKey } = useLanguage();
+    const isRtl = isRTL || document.documentElement.dir === 'rtl';
+
     return (
-        <div className="flex h-screen bg-gray-100" dir={document.documentElement.dir}>
+        <div 
+            key={`layout-${renderKey}`}
+            className={`flex h-screen bg-gray-100 ${isRtl ? 'rtl-layout' : ''}`}
+            dir={isRtl ? 'rtl' : 'ltr'}
+        >
             <Sidebar />
             <div className="flex flex-1 flex-col">
                 <Header />

@@ -1,7 +1,8 @@
 import { useTranslation } from 'react-i18next';
 
 export default function TableBadge({ role }) {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
+    const isRTL = ['ps', 'dr', 'ar', 'fa', 'ur'].includes(i18n.language);
 
     const getBadgeColor = (role) => {
         switch (role) {
@@ -24,7 +25,7 @@ export default function TableBadge({ role }) {
     };
 
     return (
-        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getBadgeColor(role)}`}>
+        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getBadgeColor(role)} ${isRTL ? 'text-right' : 'text-left'}`}>
             {getRoleDisplay(role)}
         </span>
     );

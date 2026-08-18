@@ -1,4 +1,7 @@
 {
+  "app": {
+    "name": "Sarafi"
+  },
   "common": {
     "loading": "Loading...",
     "save": "Save",
@@ -204,5 +207,15 @@
     "cancel": "Cancel",
     "message": "Are you sure you want to delete \"{{name}}\"?",
     "warning": "This action cannot be undone. All data associated with this user will be permanently removed."
+  },
+  "profile": {
+    "email": "Email",
+    "role": "Role",
+    "memberSince": "Member Since",
+    "quickActions": "Quick Actions",
+    "profile": "Profile",
+    "settings": "Settings",
+    "help": "Help",
+    "version": "Version"
   }
 }

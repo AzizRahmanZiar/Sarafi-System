@@ -54,7 +54,6 @@
   }
 }
 
-
 @keyframes slideIn {
     from {
         transform: translateX(100%);
@@ -70,7 +69,6 @@
     animation: slideIn 0.3s ease-out;
 }
 
-
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -86,39 +84,154 @@
     animation: fadeIn 0.2s ease-out;
 }
 
-/* Add to your index.css or App.css */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: scale(0.95);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
+/* RTL Layout Support */
+.rtl-layout {
+  direction: rtl;
 }
 
-.animate-fadeIn {
-    animation: fadeIn 0.2s ease-out;
+/* Header RTL Support */
+.rtl-header {
+  direction: rtl;
 }
 
-/* Add this to your index.css or App.css */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(-10px) scale(0.95);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
+.rtl-header .flex-row-reverse {
+  flex-direction: row-reverse;
 }
 
-.animate-fadeIn {
-    animation: fadeIn 0.2s ease-out forwards;
+/* Sidebar RTL Support */
+.rtl-sidebar {
+  direction: rtl;
 }
 
-/* Improve dropdown z-index */
-.z-50 {
-    z-index: 50;
+.rtl-sidebar .flex-row-reverse {
+  flex-direction: row-reverse;
+}
+
+.rtl-sidebar .space-y-2 > * + * {
+  margin-top: 0.5rem;
+  margin-bottom: 0;
+}
+
+.rtl-sidebar .gap-3 {
+  gap: 0.75rem;
+}
+
+.rtl-sidebar .text-left {
+  text-align: right !important;
+}
+
+.rtl-sidebar .text-right {
+  text-align: left !important;
+}
+
+.rtl-sidebar .flex-shrink-0 {
+  margin-left: 0.75rem;
+  margin-right: 0;
+}
+
+.rtl-sidebar .flex-row-reverse .flex-shrink-0 {
+  margin-left: 0;
+  margin-right: 0.75rem;
+}
+
+/* Profile Modal RTL Support */
+.rtl .flex-row-reverse {
+  flex-direction: row-reverse;
+}
+
+.rtl .text-left {
+  text-align: right;
+}
+
+.rtl .text-right {
+  text-align: left;
+}
+
+.rtl .ml-auto {
+  margin-right: auto;
+  margin-left: 0;
+}
+
+.rtl .mr-auto {
+  margin-left: auto;
+  margin-right: 0;
+}
+
+.rtl .mr-2 {
+  margin-right: 0;
+  margin-left: 0.5rem;
+}
+
+.rtl .ml-2 {
+  margin-left: 0;
+  margin-right: 0.5rem;
+}
+
+.rtl .mr-4 {
+  margin-right: 0;
+  margin-left: 1rem;
+}
+
+.rtl .ml-4 {
+  margin-left: 0;
+  margin-right: 1rem;
+}
+
+.rtl .absolute.right-0 {
+  right: auto;
+  left: 0;
+}
+
+.rtl .absolute.left-0 {
+  left: auto;
+  right: 0;
+}
+
+/* Delete Modal RTL Support */
+.rtl .flex-row-reverse {
+  flex-direction: row-reverse;
+}
+
+.rtl .text-right {
+  text-align: right;
+}
+
+.rtl .justify-end {
+  justify-content: flex-start;
+}
+
+/* Grid RTL Support */
+.rtl-grid {
+  direction: rtl;
+}
+
+/* Toast RTL Support */
+.rtl .mr-3 {
+  margin-right: 0;
+  margin-left: 0.75rem;
+}
+
+.rtl .ml-3 {
+  margin-left: 0;
+  margin-right: 0.75rem;
+}
+
+.rtl .mr-4 {
+  margin-right: 0;
+  margin-left: 1rem;
+}
+
+.rtl .ml-4 {
+  margin-left: 0;
+  margin-right: 1rem;
+}
+
+.rtl .ml-auto {
+  margin-left: 0;
+  margin-right: auto;
+}
+
+.rtl .mr-auto {
+  margin-right: 0;
+  margin-left: auto;
 }
