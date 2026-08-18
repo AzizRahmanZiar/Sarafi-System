@@ -40,7 +40,7 @@
     "login": "ننوتل",
     "register": "ثبتول",
     "adminPanel": "د مدیر پینل",
-    "staffPermissions": "د کارکوونکو اجازې"
+    "staffPermissions": "تنظیمات"
   },
   "dashboard": {
     "title": "ډشبورډ",
@@ -101,8 +101,8 @@
     "updating": "تازه کول..."
   },
   "settings": {
-    "title": "د کارکوونکو اجازې",
-    "description": "د کارکوونکو اجازې مدیریت کړئ",
+    "title": "تنظیمات",
+    "description": "تنظیمات مدیریت کړئ",
     "staffMembers": "کارکوونکي",
     "searchStaff": "د کارکوونکو لټون...",
     "managePermissions": "اجازې مدیریت کړئ",

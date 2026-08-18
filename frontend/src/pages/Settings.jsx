@@ -83,21 +83,29 @@ export default function Settings() {
 
         setSaving(true);
         try {
+            // Build the permissions array - THIS IS THE CORRECT FORMAT
             const permissionList = [];
             if (permissions.create_customer) permissionList.push('create_customer');
             if (permissions.create_saraf) permissionList.push('create_saraf');
 
-            await api.put(`/users/${selectedStaff.id}/permissions`, {
-                permissions: permissionList
-            });
+            // Correct payload format for your backend
+            const payload = {
+                permissions: permissionList  // Array of strings
+            };
+
+            console.log("Sending payload:", payload);
+
+            const response = await api.put(`/users/${selectedStaff.id}/permissions`, payload);
 
             setToast({
                 message: t('toast.permissionsUpdated', { name: selectedStaff.name }),
                 type: "success"
             });
 
+            // Refresh the staff list
             await fetchStaffUsers();
             
+            // Update selected staff with new permissions
             const updatedStaff = staffUsers.find(s => s.id === selectedStaff.id);
             if (updatedStaff) {
                 setSelectedStaff(updatedStaff);
@@ -107,11 +115,31 @@ export default function Settings() {
                 });
             }
         } catch (error) {
-            setToast({
-                message: error.response?.data?.message || t('toast.somethingWentWrong'),
-                type: "error"
-            });
-            console.error(error);
+            console.error("Error saving permissions:", error);
+            console.error("Error response:", error.response?.data);
+            
+            // Check if it's a validation error
+            if (error.response?.status === 422) {
+                const errors = error.response.data.errors || {};
+                let errorMessage = t('toast.pleaseCheckInput');
+                
+                // Check for specific field errors
+                if (errors.permissions) {
+                    errorMessage = errors.permissions[0] || errorMessage;
+                } else if (error.response.data.message) {
+                    errorMessage = error.response.data.message;
+                }
+                
+                setToast({
+                    message: errorMessage,
+                    type: "error"
+                });
+            } else {
+                setToast({
+                    message: error.response?.data?.message || t('toast.somethingWentWrong'),
+                    type: "error"
+                });
+            }
         } finally {
             setSaving(false);
         }

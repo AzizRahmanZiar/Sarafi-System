@@ -40,7 +40,7 @@
     "login": "ورود",
     "register": "ثبت‌نام",
     "adminPanel": "پنل مدیریت",
-    "staffPermissions": "دسترسی‌های کارمندان"
+    "staffPermissions": "تنظیمات"
   },
   "dashboard": {
     "title": "داشبورد",
@@ -101,8 +101,8 @@
     "updating": "در حال به‌روزرسانی..."
   },
   "settings": {
-    "title": "دسترسی‌های کارمندان",
-    "description": "مدیریت دسترسی‌های کارمندان",
+    "title": "تنظیمات",
+    "description": "مدیریت تنظیمات",
     "staffMembers": "کارمندان",
     "searchStaff": "جستجوی کارمند...",
     "managePermissions": "مدیریت دسترسی‌ها",

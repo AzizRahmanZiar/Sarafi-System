@@ -54,6 +54,10 @@
   }
 }
 
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+
 @keyframes slideIn {
     from {
         transform: translateX(100%);
@@ -84,12 +88,18 @@
     animation: fadeIn 0.2s ease-out;
 }
 
-/* RTL Layout Support */
+/* ============================================
+   LAYOUT RTL SUPPORT
+   ============================================ */
+
 .rtl-layout {
   direction: rtl;
 }
 
-/* Header RTL Support */
+/* ============================================
+   HEADER RTL SUPPORT
+   ============================================ */
+
 .rtl-header {
   direction: rtl;
 }
@@ -98,43 +108,227 @@
   flex-direction: row-reverse;
 }
 
-/* Sidebar RTL Support */
-.rtl-sidebar {
+/* ============================================
+   SIDEBAR FULL RTL/LTR SUPPORT
+   ============================================ */
+
+/* Base Sidebar */
+.sidebar-container {
+  transition: all 0.3s ease;
+}
+
+/* LTR Sidebar (Default) */
+.sidebar-ltr {
+  direction: ltr;
+}
+
+.sidebar-ltr .sidebar-link-content {
+  flex-direction: row;
+}
+
+.sidebar-ltr .sidebar-link-text {
+  text-align: left;
+}
+
+.sidebar-ltr .sidebar-icon {
+  margin-right: 0.75rem;
+  margin-left: 0;
+}
+
+.sidebar-ltr .sidebar-user-content {
+  flex-direction: row;
+}
+
+.sidebar-ltr .sidebar-user-info {
+  text-align: left;
+}
+
+/* RTL Sidebar */
+.sidebar-rtl {
   direction: rtl;
 }
 
-.rtl-sidebar .flex-row-reverse {
-  flex-direction: row-reverse;
+.sidebar-rtl .sidebar-header {
+  text-align: right;
 }
 
-.rtl-sidebar .space-y-2 > * + * {
-  margin-top: 0.5rem;
-  margin-bottom: 0;
-}
-
-.rtl-sidebar .gap-3 {
-  gap: 0.75rem;
-}
-
-.rtl-sidebar .text-left {
+.sidebar-rtl .sidebar-title {
   text-align: right !important;
 }
 
-.rtl-sidebar .text-right {
-  text-align: left !important;
+.sidebar-rtl .sidebar-subtitle {
+  text-align: right !important;
 }
 
-.rtl-sidebar .flex-shrink-0 {
+.sidebar-rtl .sidebar-nav {
+  direction: rtl;
+}
+
+.sidebar-rtl .sidebar-link-content {
+  flex-direction: row-reverse !important;
+}
+
+.sidebar-rtl .sidebar-link-text {
+  text-align: right !important;
+  flex: 1;
+  display: inline-block;
+  width: 100%;
+}
+
+.sidebar-rtl .sidebar-icon {
   margin-left: 0.75rem;
   margin-right: 0;
 }
 
-.rtl-sidebar .flex-row-reverse .flex-shrink-0 {
-  margin-left: 0;
-  margin-right: 0.75rem;
+.sidebar-rtl .sidebar-link {
+  text-align: right;
 }
 
-/* Profile Modal RTL Support */
+.sidebar-rtl .sidebar-link .flex {
+  flex-direction: row-reverse;
+}
+
+.sidebar-rtl .sidebar-divider-text {
+  text-align: right !important;
+}
+
+.sidebar-rtl .sidebar-user-content {
+  flex-direction: row-reverse !important;
+}
+
+.sidebar-rtl .sidebar-user-info {
+  text-align: right !important;
+}
+
+.sidebar-rtl .sidebar-user-icon {
+  order: -1;
+}
+
+/* Force RTL for all children when sidebar is RTL */
+.sidebar-rtl * {
+  direction: rtl;
+}
+
+/* Space between nav items in RTL */
+.sidebar-rtl .space-y-2 > * + * {
+  margin-top: 0.5rem;
+  margin-bottom: 0;
+}
+
+/* Icon positioning in RTL */
+.sidebar-rtl .flex-row-reverse .flex-shrink-0 {
+  margin-left: 0 !important;
+  margin-right: 0.75rem !important;
+}
+
+/* Ensure proper spacing for nav items */
+.sidebar-rtl nav .block {
+  padding-right: 1rem;
+  padding-left: 1rem;
+}
+
+.sidebar-rtl .block {
+  text-align: right;
+}
+
+.sidebar-rtl .flex-row-reverse .w-5 {
+  margin-left: 0.75rem;
+  margin-right: 0;
+}
+
+.sidebar-rtl .flex-row-reverse .flex-1 {
+  text-align: right;
+}
+
+/* RTL border adjustments */
+.sidebar-rtl .border-l {
+  border-left: none;
+  border-right: 1px solid;
+}
+
+.sidebar-rtl .border-r {
+  border-right: none;
+  border-left: 1px solid;
+}
+
+/* RTL padding adjustments */
+.sidebar-rtl .pl-4 {
+  padding-left: 0;
+  padding-right: 1rem;
+}
+
+.sidebar-rtl .pr-4 {
+  padding-right: 0;
+  padding-left: 1rem;
+}
+
+.sidebar-rtl .pl-3 {
+  padding-left: 0;
+  padding-right: 0.75rem;
+}
+
+.sidebar-rtl .pr-3 {
+  padding-right: 0;
+  padding-left: 0.75rem;
+}
+
+/* RTL margins */
+.sidebar-rtl .ml-auto {
+  margin-left: 0;
+  margin-right: auto;
+}
+
+.sidebar-rtl .mr-auto {
+  margin-right: 0;
+  margin-left: auto;
+}
+
+.sidebar-rtl .ml-2 {
+  margin-left: 0 !important;
+  margin-right: 0.5rem !important;
+}
+
+.sidebar-rtl .mr-2 {
+  margin-right: 0 !important;
+  margin-left: 0.5rem !important;
+}
+
+.sidebar-rtl .ml-3 {
+  margin-left: 0 !important;
+  margin-right: 0.75rem !important;
+}
+
+.sidebar-rtl .mr-3 {
+  margin-right: 0 !important;
+  margin-left: 0.75rem !important;
+}
+
+/* NavLink active state in RTL */
+.sidebar-rtl .bg-blue-600 {
+  background-color: #2563eb;
+}
+
+/* Override any global RTL issues */
+[dir="rtl"] .sidebar-container {
+  direction: rtl;
+}
+
+[dir="rtl"] .sidebar-container .flex-row-reverse {
+  flex-direction: row-reverse !important;
+}
+
+[dir="rtl"] .sidebar-container .text-left {
+  text-align: right !important;
+}
+
+[dir="rtl"] .sidebar-container .text-right {
+  text-align: left !important;
+}
+
+/* ============================================
+   PROFILE MODAL RTL SUPPORT
+   ============================================ */
+
 .rtl .flex-row-reverse {
   flex-direction: row-reverse;
 }
@@ -187,7 +381,10 @@
   right: 0;
 }
 
-/* Delete Modal RTL Support */
+/* ============================================
+   DELETE MODAL RTL SUPPORT
+   ============================================ */
+
 .rtl .flex-row-reverse {
   flex-direction: row-reverse;
 }
@@ -200,12 +397,18 @@
   justify-content: flex-start;
 }
 
-/* Grid RTL Support */
+/* ============================================
+   GRID RTL SUPPORT
+   ============================================ */
+
 .rtl-grid {
   direction: rtl;
 }
 
-/* Toast RTL Support */
+/* ============================================
+   TOAST RTL SUPPORT
+   ============================================ */
+
 .rtl .mr-3 {
   margin-right: 0;
   margin-left: 0.75rem;
@@ -234,4 +437,160 @@
 .rtl .mr-auto {
   margin-right: 0;
   margin-left: auto;
+}
+
+
+/* ============================================
+   FORCED RTL OVERRIDES FOR SIDEBAR
+   ============================================ */
+
+/* Force all text in RTL sidebar to be right-aligned */
+.sidebar-rtl,
+.sidebar-rtl *,
+.sidebar-rtl .sidebar-title,
+.sidebar-rtl .sidebar-subtitle,
+.sidebar-rtl .sidebar-link,
+.sidebar-rtl .sidebar-link-text,
+.sidebar-rtl .sidebar-user-name,
+.sidebar-rtl .sidebar-user-role,
+.sidebar-rtl .sidebar-divider-text,
+.sidebar-rtl .text-left {
+  text-align: right !important;
+}
+
+/* Force all text in LTR sidebar to be left-aligned */
+.sidebar-ltr,
+.sidebar-ltr *,
+.sidebar-ltr .sidebar-title,
+.sidebar-ltr .sidebar-subtitle,
+.sidebar-ltr .sidebar-link,
+.sidebar-ltr .sidebar-link-text,
+.sidebar-ltr .sidebar-user-name,
+.sidebar-ltr .sidebar-user-role,
+.sidebar-ltr .sidebar-divider-text,
+.sidebar-ltr .text-right {
+  text-align: left !important;
+}
+
+/* Force RTL direction for sidebar-rtl and all children */
+.sidebar-rtl,
+.sidebar-rtl * {
+  direction: rtl !important;
+}
+
+/* Force LTR direction for sidebar-ltr and all children */
+.sidebar-ltr,
+.sidebar-ltr * {
+  direction: ltr !important;
+}
+
+/* Force flex direction for RTL */
+.sidebar-rtl .flex {
+  flex-direction: row-reverse !important;
+}
+
+.sidebar-rtl .flex-row-reverse {
+  flex-direction: row-reverse !important;
+}
+
+.sidebar-rtl .sidebar-link-content {
+  flex-direction: row-reverse !important;
+}
+
+.sidebar-rtl .sidebar-user-content {
+  flex-direction: row-reverse !important;
+}
+
+/* Force icon order in RTL */
+.sidebar-rtl .order-first {
+  order: -1 !important;
+}
+
+.sidebar-rtl .order-last {
+  order: 1 !important;
+}
+
+/* Fix icon spacing in RTL */
+.sidebar-rtl .gap-3 {
+  gap: 0.75rem !important;
+}
+
+.sidebar-rtl .sidebar-icon {
+  margin-left: 0.75rem !important;
+  margin-right: 0 !important;
+}
+
+.sidebar-rtl .flex-row-reverse .sidebar-icon {
+  margin-left: 0 !important;
+  margin-right: 0.75rem !important;
+}
+
+/* Fix padding in RTL */
+.sidebar-rtl .px-4 {
+  padding-left: 1rem !important;
+  padding-right: 1rem !important;
+}
+
+.sidebar-rtl .pl-4 {
+  padding-left: 0 !important;
+  padding-right: 1rem !important;
+}
+
+.sidebar-rtl .pr-4 {
+  padding-right: 0 !important;
+  padding-left: 1rem !important;
+}
+
+/* Fix margin in RTL */
+.sidebar-rtl .ml-auto {
+  margin-left: 0 !important;
+  margin-right: auto !important;
+}
+
+.sidebar-rtl .mr-auto {
+  margin-right: 0 !important;
+  margin-left: auto !important;
+}
+
+/* Fix border in RTL */
+.sidebar-rtl .border-l {
+  border-left: none !important;
+  border-right: 1px solid !important;
+}
+
+.sidebar-rtl .border-r {
+  border-right: none !important;
+  border-left: 1px solid !important;
+}
+
+/* NavLink active state in RTL */
+.sidebar-rtl .bg-blue-600 {
+  background-color: #2563eb !important;
+}
+
+/* Override any conflicting styles */
+[dir="rtl"] .sidebar-container .text-left {
+  text-align: right !important;
+}
+
+[dir="rtl"] .sidebar-container .text-right {
+  text-align: right !important;
+}
+
+[dir="ltr"] .sidebar-container .text-left {
+  text-align: left !important;
+}
+
+[dir="ltr"] .sidebar-container .text-right {
+  text-align: right !important;
+}
+
+/* Force sidebar-rtl to override everything */
+.sidebar-rtl .sidebar-title,
+.sidebar-rtl .sidebar-subtitle,
+.sidebar-rtl .sidebar-link-text,
+.sidebar-rtl .sidebar-user-name,
+.sidebar-rtl .sidebar-user-role,
+.sidebar-rtl .sidebar-divider-text {
+  text-align: right !important;
 }

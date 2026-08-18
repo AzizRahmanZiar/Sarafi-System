@@ -189,17 +189,29 @@ class AuthController extends Controller
         }
     }
 
-    // Update user permissions (Admin only)
+    // Update user permissions (Admin only) - FIXED
     public function updateUserPermissions(Request $request, $id)
     {
         try {
-            if (!Auth::user() || !Auth::user()->isAdmin()) {
+            $admin = Auth::user();
+            
+            // Check if admin is authenticated
+            if (!$admin) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthenticated.'
+                ], 401);
+            }
+            
+            // Only admin can update permissions
+            if (!$admin->isAdmin()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Unauthorized. Only admin can update permissions.'
                 ], 403);
             }
 
+            // Find the user
             $user = User::find($id);
             if (!$user) {
                 return response()->json([
@@ -216,12 +228,46 @@ class AuthController extends Controller
                 ], 422);
             }
 
-            $validated = $request->validate([
-                'permissions' => 'required|array',
-                'permissions.*' => 'string|in:create_customer,create_saraf'
-            ]);
+            // Get the permissions from the request
+            $permissions = $request->input('permissions');
+            
+            // If permissions is null or not provided, default to empty array
+            if ($permissions === null) {
+                $permissions = [];
+            }
+            
+            // If permissions is a string (comma-separated), convert to array
+            if (is_string($permissions)) {
+                $permissions = array_filter(array_map('trim', explode(',', $permissions)));
+            }
+            
+            // If permissions is not an array, return error
+            if (!is_array($permissions)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Permissions must be an array.',
+                    'errors' => [
+                        'permissions' => ['Permissions must be an array.']
+                    ]
+                ], 422);
+            }
 
-            $user->permissions = $validated['permissions'];
+            // Validate each permission
+            $validPermissions = ['create_customer', 'create_saraf'];
+            $invalidPermissions = array_diff($permissions, $validPermissions);
+            
+            if (!empty($invalidPermissions)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid permissions provided.',
+                    'errors' => [
+                        'permissions' => ['Invalid permissions: ' . implode(', ', $invalidPermissions)]
+                    ]
+                ], 422);
+            }
+
+            // Update the user's permissions
+            $user->permissions = $permissions;
             $user->save();
 
             return response()->json([
@@ -231,6 +277,7 @@ class AuthController extends Controller
             ]);
 
         } catch (\Exception $e) {
+            \Log::error('Permission update error: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Update failed: ' . $e->getMessage()

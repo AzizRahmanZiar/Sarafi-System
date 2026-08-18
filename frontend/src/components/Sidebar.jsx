@@ -13,13 +13,27 @@ import {
 
 export default function Sidebar() {
     const navigate = useNavigate();
-    const { t, ready, i18n } = useTranslation();
+    const { t, ready } = useTranslation();
     const { renderKey, isRTL } = useLanguage();
     const [user, setUser] = useState(null);
     const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
     const userSectionRef = useRef(null);
+    const [isRtl, setIsRtl] = useState(false);
 
-    // Remove forceUpdate from dependencies to prevent infinite loops
+    // Force update when language changes
+    useEffect(() => {
+        const isRtlValue = isRTL || document.documentElement.dir === 'rtl';
+        setIsRtl(isRtlValue);
+        // Force document direction
+        if (isRtlValue) {
+            document.documentElement.dir = 'rtl';
+            document.body.dir = 'rtl';
+        } else {
+            document.documentElement.dir = 'ltr';
+            document.body.dir = 'ltr';
+        }
+    }, [isRTL, renderKey]);
+
     useEffect(() => {
         const userData = localStorage.getItem("user");
         if (userData) {
@@ -90,96 +104,103 @@ export default function Sidebar() {
     const staffPermissionsText = getText('navigation.staffPermissions', 'Staff Permissions');
     const appName = getText('app.name', 'Sarafi');
 
-    const isRtl = isRTL || document.documentElement.dir === 'rtl';
+    // Get current RTL state
+    const currentIsRtl = isRtl || document.documentElement.dir === 'rtl';
 
     return (
         <>
             <aside 
                 key={`sidebar-${renderKey}`}
-                className={`w-64 bg-slate-900 text-white min-h-screen flex flex-col ${isRtl ? 'rtl-sidebar' : ''}`}
-                dir={isRtl ? 'rtl' : 'ltr'}
+                className={`sidebar-container w-64 bg-slate-900 text-white min-h-screen flex flex-col ${currentIsRtl ? 'sidebar-rtl' : 'sidebar-ltr'}`}
+                dir={currentIsRtl ? 'rtl' : 'ltr'}
             >
-                <div className="border-b border-slate-700 p-5">
-                    <h1 className={`text-2xl font-bold ${isRtl ? 'text-right' : 'text-left'}`}>
+                {/* Logo Section */}
+                <div className={`sidebar-header border-b border-slate-700 p-5 ${currentIsRtl ? 'text-right' : 'text-left'}`}>
+                    <h1 className={`sidebar-title text-2xl font-bold ${currentIsRtl ? 'text-right' : 'text-left'}`}>
                         {appName}
                     </h1>
-                    <p className={`text-xs text-slate-400 mt-1 ${isRtl ? 'text-right' : 'text-left'}`}>
+                    <p className={`sidebar-subtitle text-xs text-slate-400 mt-1 ${currentIsRtl ? 'text-right' : 'text-left'}`}>
                         {dashboardText}
                     </p>
                 </div>
 
-                <nav className="flex-1 p-4 space-y-2">
+                {/* Navigation Links */}
+                <nav className={`sidebar-nav flex-1 p-4 ${currentIsRtl ? 'space-y-2' : 'space-y-2'}`}>
+                    {/* Dashboard Link */}
                     <NavLink
                         to="/dashboard"
                         className={({ isActive }) =>
-                            `block rounded-lg px-4 py-2.5 transition-colors ${
+                            `sidebar-link block rounded-lg px-4 py-2.5 transition-colors ${
                                 isActive ? "bg-blue-600" : "hover:bg-slate-700"
-                            }`
+                            } ${currentIsRtl ? 'text-right' : 'text-left'}`
                         }
                     >
-                        <span className={`flex items-center gap-3 ${isRtl ? 'flex-row-reverse' : ''}`}>
-                            <FaTachometerAlt className="w-5 h-5 flex-shrink-0" />
-                            <span>{dashboardText}</span>
+                        <span className={`sidebar-link-content flex items-center gap-3 ${currentIsRtl ? 'flex-row-reverse' : ''}`}>
+                            <FaTachometerAlt className={`sidebar-icon w-5 h-5 flex-shrink-0 ${currentIsRtl ? 'order-last' : ''}`} />
+                            <span className={`sidebar-link-text flex-1 ${currentIsRtl ? 'text-right' : 'text-left'}`}>{dashboardText}</span>
                         </span>
                     </NavLink>
 
+                    {/* Accounts Link */}
                     <NavLink
                         to="/dashboard/accounts"
                         className={({ isActive }) =>
-                            `block rounded-lg px-4 py-2.5 transition-colors ${
+                            `sidebar-link block rounded-lg px-4 py-2.5 transition-colors ${
                                 isActive ? "bg-blue-600" : "hover:bg-slate-700"
-                            }`
+                            } ${currentIsRtl ? 'text-right' : 'text-left'}`
                         }
                     >
-                        <span className={`flex items-center gap-3 ${isRtl ? 'flex-row-reverse' : ''}`}>
-                            <FaUsers className="w-5 h-5 flex-shrink-0" />
-                            <span>{accountsText}</span>
+                        <span className={`sidebar-link-content flex items-center gap-3 ${currentIsRtl ? 'flex-row-reverse' : ''}`}>
+                            <FaUsers className={`sidebar-icon w-5 h-5 flex-shrink-0 ${currentIsRtl ? 'order-last' : ''}`} />
+                            <span className={`sidebar-link-text flex-1 ${currentIsRtl ? 'text-right' : 'text-left'}`}>{accountsText}</span>
                         </span>
                     </NavLink>
 
                     {isAdmin && (
                         <>
-                            <div className="pt-4 mt-4 border-t border-slate-700">
-                                <p className={`px-4 text-xs text-slate-400 uppercase tracking-wider mb-2 ${isRtl ? 'text-right' : ''}`}>
+                            <div className="sidebar-divider pt-4 mt-4 border-t border-slate-700">
+                                <p className={`sidebar-divider-text px-4 text-xs text-slate-400 uppercase tracking-wider mb-2 ${currentIsRtl ? 'text-right' : 'text-left'}`}>
                                     {adminPanelText}
                                 </p>
                             </div>
 
+                            {/* Staff Permissions Link */}
                             <NavLink
                                 to="/dashboard/staff-permissions"
                                 className={({ isActive }) =>
-                                    `block rounded-lg px-4 py-2.5 transition-colors ${
+                                    `sidebar-link block rounded-lg px-4 py-2.5 transition-colors ${
                                         isActive ? "bg-blue-600" : "hover:bg-slate-700"
-                                    }`
+                                    } ${currentIsRtl ? 'text-right' : 'text-left'}`
                                 }
                             >
-                                <span className={`flex items-center gap-3 ${isRtl ? 'flex-row-reverse' : ''}`}>
-                                    <FaShieldAlt className="w-5 h-5 flex-shrink-0" />
-                                    <span>{staffPermissionsText}</span>
+                                <span className={`sidebar-link-content flex items-center gap-3 ${currentIsRtl ? 'flex-row-reverse' : ''}`}>
+                                    <FaShieldAlt className={`sidebar-icon w-5 h-5 flex-shrink-0 ${currentIsRtl ? 'order-last' : ''}`} />
+                                    <span className={`sidebar-link-text flex-1 ${currentIsRtl ? 'text-right' : 'text-left'}`}>{staffPermissionsText}</span>
                                 </span>
                             </NavLink>
                         </>
                     )}
                 </nav>
 
+                {/* User Profile Section */}
                 <div 
                     ref={userSectionRef}
-                    className="border-t border-slate-700 p-4 cursor-pointer hover:bg-slate-800 transition-colors"
+                    className="sidebar-user-section border-t border-slate-700 p-4 cursor-pointer hover:bg-slate-800 transition-colors"
                     onClick={() => setIsProfileModalOpen(true)}
                 >
-                    <div className={`flex items-center gap-3 ${isRtl ? 'flex-row-reverse' : ''}`}>
-                        <div className="h-9 w-9 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">
+                    <div className={`sidebar-user-content flex items-center gap-3 ${currentIsRtl ? 'flex-row-reverse' : ''}`}>
+                        <div className="sidebar-avatar h-9 w-9 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">
                             {getInitials(user?.name)}
                         </div>
-                        <div className={`flex-1 min-w-0 ${isRtl ? 'text-right' : 'text-left'}`}>
-                            <p className="text-sm font-medium truncate">
+                        <div className={`sidebar-user-info flex-1 min-w-0 ${currentIsRtl ? 'text-right' : 'text-left'}`}>
+                            <p className={`sidebar-user-name text-sm font-medium truncate ${currentIsRtl ? 'text-right' : 'text-left'}`}>
                                 {displayName}
                             </p>
-                            <p className="text-xs text-slate-400 truncate">
+                            <p className={`sidebar-user-role text-xs text-slate-400 truncate ${currentIsRtl ? 'text-right' : 'text-left'}`}>
                                 {displayRole}
                             </p>
                         </div>
-                        <FaUserCircle className={`w-4 h-4 text-slate-400 flex-shrink-0 ${isRtl ? 'order-first' : ''}`} />
+                        <FaUserCircle className={`sidebar-user-icon w-4 h-4 text-slate-400 flex-shrink-0 ${currentIsRtl ? 'order-first' : ''}`} />
                     </div>
                 </div>
             </aside>
