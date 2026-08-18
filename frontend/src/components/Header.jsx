@@ -1,14 +1,16 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from 'react-i18next';
 import Toast from "./Toast";
+import LanguageSwitcher from "./LanguageSwitcher";
 
 export default function Header() {
     const navigate = useNavigate();
+    const { t, ready } = useTranslation();
     const [user, setUser] = useState(null);
     const [toast, setToast] = useState(null);
 
     useEffect(() => {
-        // Get user data from localStorage
         const userData = localStorage.getItem("user");
         if (userData) {
             try {
@@ -24,7 +26,7 @@ export default function Header() {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
         setToast({
-            message: "Logged out successfully!",
+            message: ready ? t('toast.logoutSuccess') : 'Logged out successfully!',
             type: "success"
         });
         setTimeout(() => {
@@ -32,7 +34,6 @@ export default function Header() {
         }, 1500);
     };
 
-    // Get initials from name
     const getInitials = (name) => {
         if (!name) return "U";
         return name
@@ -43,9 +44,19 @@ export default function Header() {
             .slice(0, 2);
     };
 
-    // Get role display name
+    const getText = (key, fallback) => {
+        return ready ? t(key) : fallback;
+    };
+
     const getRoleDisplay = (role) => {
-        if (!role) return "User";
+        if (!role) return getText('common.user', 'User');
+        const roleKey = `common.${role}`;
+        if (ready) {
+            const translated = t(roleKey);
+            if (translated !== roleKey) {
+                return translated;
+            }
+        }
         return role.charAt(0).toUpperCase() + role.slice(1);
     };
 
@@ -59,33 +70,32 @@ export default function Header() {
                 />
             )}
 
-            <header className="flex h-16 items-center justify-between border-b bg-white px-6">
+            <header className="flex h-16 items-center justify-between border-b bg-white px-6" dir={document.documentElement.dir}>
                 <h2 className="text-xl font-semibold">
-                    Dashboard
+                    {getText('navigation.dashboard', 'Dashboard')}
                 </h2>
 
                 <div className="flex items-center gap-4">
-                    {/* User Info */}
-                    <div className="text-right">
+                    <LanguageSwitcher />
+
+                    <div className={document.documentElement.dir === 'rtl' ? 'text-left' : 'text-right'}>
                         <p className="font-medium">
-                            {user?.name || "User"}
+                            {user?.name || getText('common.user', 'User')}
                         </p>
                         <p className="text-sm text-gray-500">
                             {user?.email || "user@example.com"}
                         </p>
                     </div>
 
-                    {/* User Avatar */}
                     <div className="relative group">
                         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-white font-semibold">
                             {getInitials(user?.name)}
                         </div>
                         
-                        {/* Dropdown Menu */}
-                        <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 border border-gray-200 hidden group-hover:block">
+                        <div className={`absolute ${document.documentElement.dir === 'rtl' ? 'left-0' : 'right-0'} mt-2 w-48 bg-white rounded-lg shadow-lg py-1 border border-gray-200 hidden group-hover:block z-50`}>
                             <div className="px-4 py-2 border-b border-gray-200">
                                 <p className="text-sm font-medium text-gray-800">
-                                    {user?.name || "User"}
+                                    {user?.name || getText('common.user', 'User')}
                                 </p>
                                 <p className="text-xs text-gray-500">
                                     {user?.email || "user@example.com"}
@@ -104,7 +114,7 @@ export default function Header() {
                                 onClick={handleLogout}
                                 className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 transition-colors"
                             >
-                                Sign Out
+                                {getText('navigation.logout', 'Logout')}
                             </button>
                         </div>
                     </div>

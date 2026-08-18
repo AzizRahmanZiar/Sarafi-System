@@ -1,6 +1,6 @@
-// Dashboard.jsx
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from 'react-i18next';
 import Toast from "../components/Toast";
 import api from "../services/api";
 import { 
@@ -14,6 +14,7 @@ import {
 
 export default function Dashboard() {
     const navigate = useNavigate();
+    const { t } = useTranslation();
     const [user, setUser] = useState(null);
     const [stats, setStats] = useState({
         total: 0,
@@ -44,7 +45,6 @@ export default function Dashboard() {
             localStorage.removeItem("user");
             navigate("/login", { replace: true });
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     // Fetch user statistics
@@ -78,7 +78,7 @@ export default function Dashboard() {
                 return;
             }
             setToast({
-                message: "Could not load user statistics",
+                message: t('toast.failedToLoad'),
                 type: "error"
             });
         } finally {
@@ -91,7 +91,7 @@ export default function Dashboard() {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
         setToast({
-            message: "Logged out successfully!",
+            message: t('toast.logoutSuccess'),
             type: "success"
         });
         setTimeout(() => {
@@ -99,13 +99,12 @@ export default function Dashboard() {
         }, 1500);
     };
 
-    // Navigate to accounts page with filter - FIXED
+    // Navigate to accounts page with filter
     const navigateToAccounts = (role = "all") => {
         console.log("Navigating to accounts with role:", role);
-        // Use relative path since we're already in /dashboard
         navigate("accounts", { 
             state: { filterRole: role },
-            replace: false // Don't replace, just push
+            replace: false
         });
     };
 
@@ -113,14 +112,14 @@ export default function Dashboard() {
         return (
             <div className="flex min-h-screen items-center justify-center">
                 <div className="text-center">
-                    <div className="text-xl text-gray-600">Loading...</div>
+                    <div className="text-xl text-gray-600">{t('common.loading')}</div>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-gray-100 p-6">
+        <div className="min-h-screen bg-gray-100 p-6" dir={document.documentElement.dir}>
             {toast && (
                 <Toast
                     message={toast.message}
@@ -134,10 +133,10 @@ export default function Dashboard() {
                 <div className="mb-6 flex items-center justify-between">
                     <div>
                         <h1 className="text-3xl font-bold text-gray-800">
-                            Dashboard
+                            {t('dashboard.title')}
                         </h1>
                         <p className="text-gray-500 mt-1">
-                            Welcome back, {user?.name || "User"}!
+                            {t('dashboard.welcome', { name: user?.name || t('common.user') })}
                         </p>
                     </div>
                     <button
@@ -145,7 +144,7 @@ export default function Dashboard() {
                         className="flex items-center gap-2 rounded-lg bg-red-500 px-4 py-2 text-white hover:bg-red-600 transition-colors"
                     >
                         <FaSignOutAlt className="w-4 h-4" />
-                        Logout
+                        {t('navigation.logout')}
                     </button>
                 </div>
 
@@ -161,10 +160,10 @@ export default function Dashboard() {
                                 <FaUsers className="w-6 h-6 text-blue-600" />
                             </div>
                         </div>
-                        <p className="text-sm text-gray-500 font-medium">Total Users</p>
+                        <p className="text-sm text-gray-500 font-medium">{t('dashboard.totalUsers')}</p>
                         <p className="text-3xl font-bold text-gray-800 mt-1">{stats.total}</p>
                         <p className="text-xs text-blue-600 mt-2 flex items-center gap-1">
-                            View all users
+                            {t('dashboard.viewAll')}
                             <FaArrowRight className="w-3 h-3" />
                         </p>
                     </div>
@@ -179,10 +178,10 @@ export default function Dashboard() {
                                 <FaUser className="w-6 h-6 text-blue-600" />
                             </div>
                         </div>
-                        <p className="text-sm text-gray-500 font-medium">Staff</p>
+                        <p className="text-sm text-gray-500 font-medium">{t('dashboard.staff')}</p>
                         <p className="text-3xl font-bold text-blue-600 mt-1">{stats.staff}</p>
                         <p className="text-xs text-blue-600 mt-2 flex items-center gap-1">
-                            View staff members
+                            {t('dashboard.viewStaff')}
                             <FaArrowRight className="w-3 h-3" />
                         </p>
                     </div>
@@ -197,10 +196,10 @@ export default function Dashboard() {
                                 <FaUserFriends className="w-6 h-6 text-green-600" />
                             </div>
                         </div>
-                        <p className="text-sm text-gray-500 font-medium">Customers</p>
+                        <p className="text-sm text-gray-500 font-medium">{t('dashboard.customers')}</p>
                         <p className="text-3xl font-bold text-green-600 mt-1">{stats.customers}</p>
                         <p className="text-xs text-green-600 mt-2 flex items-center gap-1">
-                            View customers
+                            {t('dashboard.viewCustomers')}
                             <FaArrowRight className="w-3 h-3" />
                         </p>
                     </div>
@@ -215,10 +214,10 @@ export default function Dashboard() {
                                 <FaUserTag className="w-6 h-6 text-yellow-600" />
                             </div>
                         </div>
-                        <p className="text-sm text-gray-500 font-medium">Saraf</p>
+                        <p className="text-sm text-gray-500 font-medium">{t('dashboard.saraf')}</p>
                         <p className="text-3xl font-bold text-yellow-600 mt-1">{stats.saraf}</p>
                         <p className="text-xs text-yellow-600 mt-2 flex items-center gap-1">
-                            View saraf users
+                            {t('dashboard.viewSaraf')}
                             <FaArrowRight className="w-3 h-3" />
                         </p>
                     </div>
@@ -227,35 +226,35 @@ export default function Dashboard() {
                 {/* Quick Actions */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg shadow-md p-6 text-white">
-                        <h3 className="text-lg font-semibold mb-2">Manage Staff</h3>
-                        <p className="text-blue-100 text-sm mb-4">Add or manage staff members</p>
+                        <h3 className="text-lg font-semibold mb-2">{t('dashboard.manageStaff')}</h3>
+                        <p className="text-blue-100 text-sm mb-4">{t('dashboard.manageStaffDesc')}</p>
                         <button 
                             onClick={() => navigateToAccounts("staff")}
                             className="bg-white text-blue-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-50 transition-colors"
                         >
-                            View Staff
+                            {t('dashboard.viewStaff')}
                         </button>
                     </div>
 
                     <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-lg shadow-md p-6 text-white">
-                        <h3 className="text-lg font-semibold mb-2">Customer Management</h3>
-                        <p className="text-green-100 text-sm mb-4">View and manage customers</p>
+                        <h3 className="text-lg font-semibold mb-2">{t('dashboard.customerManagement')}</h3>
+                        <p className="text-green-100 text-sm mb-4">{t('dashboard.customerManagementDesc')}</p>
                         <button 
                             onClick={() => navigateToAccounts("customer")}
                             className="bg-white text-green-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-50 transition-colors"
                         >
-                            View Customers
+                            {t('dashboard.viewCustomers')}
                         </button>
                     </div>
 
                     <div className="bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-lg shadow-md p-6 text-white">
-                        <h3 className="text-lg font-semibold mb-2">Saraf Management</h3>
-                        <p className="text-yellow-100 text-sm mb-4">Manage saraf users</p>
+                        <h3 className="text-lg font-semibold mb-2">{t('dashboard.sarafManagement')}</h3>
+                        <p className="text-yellow-100 text-sm mb-4">{t('dashboard.sarafManagementDesc')}</p>
                         <button 
                             onClick={() => navigateToAccounts("saraf")}
                             className="bg-white text-yellow-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-yellow-50 transition-colors"
                         >
-                            View Saraf
+                            {t('dashboard.viewSaraf')}
                         </button>
                     </div>
                 </div>

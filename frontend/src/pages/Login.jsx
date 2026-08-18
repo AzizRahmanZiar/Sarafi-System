@@ -1,6 +1,6 @@
-// Login.jsx
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useTranslation } from 'react-i18next';
 import Form from "../components/form/Form";
 import Input from "../components/form/Input";
 import Label from "../components/form/Label";
@@ -11,6 +11,7 @@ import { FaEnvelope, FaLock, FaUserPlus } from "react-icons/fa";
 
 export default function Login() {
     const navigate = useNavigate();
+    const { t, ready } = useTranslation();
     const [isChecking, setIsChecking] = useState(true);
 
     const [formData, setFormData] = useState({
@@ -24,18 +25,15 @@ export default function Login() {
     const [toast, setToast] = useState(null);
     const [adminExists, setAdminExists] = useState(true);
 
-    // Check if user is already logged in - FIXED: Only runs once
     useEffect(() => {
         const token = localStorage.getItem("token");
         if (token) {
-            // User is already logged in, redirect to dashboard
             navigate("/dashboard", { replace: true });
             return;
         }
         setIsChecking(false);
-    }, [navigate]); // Added navigate to dependencies but it won't cause loop
+    }, [navigate]);
 
-    // Check admin existence - FIXED: Only runs once
     useEffect(() => {
         const checkAdmin = async () => {
             try {
@@ -47,13 +45,11 @@ export default function Login() {
             }
         };
         
-        // Only check if not already checking and no token
         if (!isChecking) {
             checkAdmin();
         }
     }, [isChecking]);
 
-    // Load saved email - FIXED: Only runs once
     useEffect(() => {
         const savedEmail = localStorage.getItem("rememberedEmail");
         if (savedEmail) {
@@ -64,6 +60,10 @@ export default function Login() {
             setRememberMe(true);
         }
     }, []);
+
+    const getText = (key, fallback) => {
+        return ready ? t(key) : fallback;
+    };
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -89,7 +89,6 @@ export default function Login() {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Prevent multiple submissions
         if (loading) return;
 
         setLoading(true);
@@ -99,7 +98,6 @@ export default function Login() {
         try {
             const response = await api.post("/login", formData);
 
-            // Save authentication data
             if (response.data.token) {
                 localStorage.setItem("token", response.data.token);
             }
@@ -111,7 +109,6 @@ export default function Login() {
                 );
             }
 
-            // Handle remember me
             if (rememberMe) {
                 localStorage.setItem("rememberedEmail", formData.email);
             } else {
@@ -119,11 +116,10 @@ export default function Login() {
             }
 
             setToast({
-                message: "Login successful! Redirecting...",
+                message: getText('toast.loginSuccess', 'Login successful!'),
                 type: "success"
             });
 
-            // Redirect after a delay
             setTimeout(() => {
                 navigate("/dashboard", { replace: true });
             }, 1500);
@@ -132,28 +128,28 @@ export default function Login() {
             if (error.response?.status === 422) {
                 setErrors(error.response.data.errors || {});
                 setToast({
-                    message: "Please check your input and try again.",
+                    message: getText('toast.pleaseCheckInput', 'Please check your input and try again.'),
                     type: "error"
                 });
             } else if (error.response?.status === 401) {
                 setErrors({
                     email: [
                         error.response.data.message ||
-                            "Invalid email or password.",
+                            getText('login.invalidCredentials', 'Invalid email or password.'),
                     ],
                 });
                 setToast({
-                    message: error.response.data.message || "Invalid email or password.",
+                    message: error.response.data.message || getText('login.invalidCredentials', 'Invalid email or password.'),
                     type: "error"
                 });
             } else if (error.response?.status === 403) {
                 setToast({
-                    message: error.response.data.message || "Only admin and staff can login.",
+                    message: error.response.data.message || getText('login.onlyAdminStaff', 'Only admin and staff can login.'),
                     type: "error"
                 });
             } else {
                 setToast({
-                    message: "Something went wrong. Please try again later.",
+                    message: getText('toast.somethingWentWrong', 'Something went wrong. Please try again later.'),
                     type: "error"
                 });
                 console.error(error);
@@ -163,19 +159,18 @@ export default function Login() {
         }
     };
 
-    // Show loading while checking auth
     if (isChecking) {
         return (
             <div className="flex min-h-screen items-center justify-center bg-gray-100">
                 <div className="text-center">
-                    <div className="text-xl text-gray-600">Loading...</div>
+                    <div className="text-xl text-gray-600">{getText('common.loading', 'Loading...')}</div>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="flex min-h-screen items-center justify-center bg-gray-100 px-4">
+        <div className="flex min-h-screen items-center justify-center bg-gray-100 px-4" dir={document.documentElement.dir}>
             {toast && (
                 <Toast
                     message={toast.message}
@@ -187,10 +182,10 @@ export default function Login() {
             <div className="w-full max-w-md rounded-xl bg-white p-8 shadow-lg">
                 <div className="text-center mb-6">
                     <h1 className="text-3xl font-bold text-gray-800">
-                        Login
+                        {getText('login.title', 'Login')}
                     </h1>
                     <p className="mt-2 text-gray-500">
-                        Login to your account
+                        {getText('login.description', 'Login to your account')}
                     </p>
                 </div>
 
@@ -198,7 +193,7 @@ export default function Login() {
                     {/* Email */}
                     <div>
                         <Label htmlFor="email">
-                            Email
+                            {getText('login.emailLabel', 'Email')}
                         </Label>
 
                         <div className="relative">
@@ -209,7 +204,7 @@ export default function Login() {
                                 id="email"
                                 name="email"
                                 type="email"
-                                placeholder="Enter your email"
+                                placeholder={getText('login.enterEmail', 'Enter your email')}
                                 value={formData.email}
                                 onChange={handleChange}
                                 className="pl-10"
@@ -226,7 +221,7 @@ export default function Login() {
                     {/* Password */}
                     <div>
                         <Label htmlFor="password">
-                            Password
+                            {getText('login.passwordLabel', 'Password')}
                         </Label>
 
                         <div className="relative">
@@ -237,7 +232,7 @@ export default function Login() {
                                 id="password"
                                 name="password"
                                 type="password"
-                                placeholder="Enter your password"
+                                placeholder={getText('login.enterPassword', 'Enter your password')}
                                 value={formData.password}
                                 onChange={handleChange}
                                 className="pl-10"
@@ -264,7 +259,7 @@ export default function Login() {
                             htmlFor="rememberMe"
                             className="ml-2 text-sm text-gray-600 cursor-pointer"
                         >
-                            Remember Me
+                            {getText('login.rememberMe', 'Remember Me')}
                         </Label>
                     </div>
 
@@ -274,7 +269,7 @@ export default function Login() {
                         className="w-full"
                         disabled={loading}
                     >
-                        {loading ? "Logging in..." : "Login"}
+                        {loading ? getText('login.loggingIn', 'Logging in...') : getText('login.loginButton', 'Login')}
                     </Button>
 
                 </Form>
@@ -282,13 +277,13 @@ export default function Login() {
                 {/* Register Link - Only show if no admin exists */}
                 {!adminExists && (
                     <div className="mt-6 text-center text-sm text-gray-600">
-                        Don't have an account?{" "}
+                        {getText('login.noAccount', "Don't have an account?")}{" "}
                         <Link
                             to="/register"
                             className="font-medium text-blue-600 hover:underline inline-flex items-center gap-1"
                         >
                             <FaUserPlus className="w-3 h-3" />
-                            Register
+                            {getText('login.registerLink', 'Register')}
                         </Link>
                     </div>
                 )}

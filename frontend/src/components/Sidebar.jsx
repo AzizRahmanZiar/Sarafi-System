@@ -1,6 +1,6 @@
-// layouts/Sidebar.jsx
 import { useState, useEffect } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
+import { useTranslation } from 'react-i18next';
 import api from "../services/api";
 import { 
     FaTachometerAlt, 
@@ -12,6 +12,7 @@ import {
 
 export default function Sidebar() {
     const navigate = useNavigate();
+    const { t, ready } = useTranslation();
     const [user, setUser] = useState(null);
 
     useEffect(() => {
@@ -26,7 +27,6 @@ export default function Sidebar() {
         }
     }, []);
 
-    // Check user role
     const isAdmin = user?.role === "admin";
 
     const handleLogout = async () => {
@@ -40,60 +40,57 @@ export default function Sidebar() {
         }
     };
 
+    const getText = (key, fallback) => {
+        return ready ? t(key) : fallback;
+    };
+
     return (
-        <aside className="w-64 bg-slate-900 text-white min-h-screen flex flex-col">
+        <aside className="w-64 bg-slate-900 text-white min-h-screen flex flex-col" dir={document.documentElement.dir}>
             {/* Logo */}
             <div className="border-b border-slate-700 p-5">
                 <h1 className="text-2xl font-bold">
                     Money Exchange
                 </h1>
                 <p className="text-xs text-slate-400 mt-1">
-                    Management System
+                    {getText('navigation.dashboard', 'Dashboard')}
                 </p>
             </div>
 
             {/* Navigation */}
             <nav className="flex-1 p-4 space-y-2">
-                {/* Dashboard link */}
                 <NavLink
                     to="/dashboard"
                     className={({ isActive }) =>
                         `block rounded-lg px-4 py-2.5 transition-colors ${
-                            isActive
-                                ? "bg-blue-600"
-                                : "hover:bg-slate-700"
+                            isActive ? "bg-blue-600" : "hover:bg-slate-700"
                         }`
                     }
                 >
                     <span className="flex items-center gap-3">
                         <FaTachometerAlt className="w-5 h-5" />
-                        Dashboard
+                        {getText('navigation.dashboard', 'Dashboard')}
                     </span>
                 </NavLink>
 
-                {/* Accounts link - visible to both admin and staff */}
                 <NavLink
                     to="/dashboard/accounts"
                     className={({ isActive }) =>
                         `block rounded-lg px-4 py-2.5 transition-colors ${
-                            isActive
-                                ? "bg-blue-600"
-                                : "hover:bg-slate-700"
+                            isActive ? "bg-blue-600" : "hover:bg-slate-700"
                         }`
                     }
                 >
                     <span className="flex items-center gap-3">
                         <FaUsers className="w-5 h-5" />
-                        Accounts
+                        {getText('navigation.accounts', 'Accounts')}
                     </span>
                 </NavLink>
 
-                {/* Admin-only links */}
                 {isAdmin && (
                     <>
                         <div className="pt-4 mt-4 border-t border-slate-700">
                             <p className="px-4 text-xs text-slate-400 uppercase tracking-wider mb-2">
-                                Admin Panel
+                                {getText('navigation.adminPanel', 'Admin Panel')}
                             </p>
                         </div>
 
@@ -101,19 +98,15 @@ export default function Sidebar() {
                             to="/dashboard/staff-permissions"
                             className={({ isActive }) =>
                                 `block rounded-lg px-4 py-2.5 transition-colors ${
-                                    isActive
-                                        ? "bg-blue-600"
-                                        : "hover:bg-slate-700"
+                                    isActive ? "bg-blue-600" : "hover:bg-slate-700"
                                 }`
                             }
                         >
                             <span className="flex items-center gap-3">
                                 <FaShieldAlt className="w-5 h-5" />
-                                Settings system
+                                {getText('navigation.staffPermissions', 'Staff Permissions')}
                             </span>
                         </NavLink>
-
-                      
                     </>
                 )}
             </nav>
@@ -126,7 +119,7 @@ export default function Sidebar() {
                     </div>
                     <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate">
-                            {user?.name || "User"}
+                            {user?.name || getText('common.user', 'User')}
                         </p>
                         <p className="text-xs text-slate-400 truncate">
                             {user?.email || "user@example.com"}

@@ -1,6 +1,7 @@
 // pages/Settings.jsx
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from 'react-i18next';
 import Toast from "../components/Toast";
 import api from "../services/api";
 import { 
@@ -18,6 +19,7 @@ import {
 
 export default function Settings() {
     const navigate = useNavigate();
+    const { t } = useTranslation();
     const [staffUsers, setStaffUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -40,7 +42,6 @@ export default function Settings() {
             const staff = response.data.users.filter(user => user.role === 'staff');
             setStaffUsers(staff);
             
-            // Select first staff member by default
             if (staff.length > 0) {
                 setSelectedStaff(staff[0]);
                 setPermissions({
@@ -54,7 +55,7 @@ export default function Settings() {
                 navigate("/login");
             }
             setToast({
-                message: "Failed to load staff users",
+                message: t('toast.failedToLoadStaff'),
                 type: "error"
             });
         } finally {
@@ -91,14 +92,12 @@ export default function Settings() {
             });
 
             setToast({
-                message: `Permissions updated for ${selectedStaff.name}`,
+                message: t('toast.permissionsUpdated', { name: selectedStaff.name }),
                 type: "success"
             });
 
-            // Update the staff list
             await fetchStaffUsers();
             
-            // Update selected staff with new permissions
             const updatedStaff = staffUsers.find(s => s.id === selectedStaff.id);
             if (updatedStaff) {
                 setSelectedStaff(updatedStaff);
@@ -109,7 +108,7 @@ export default function Settings() {
             }
         } catch (error) {
             setToast({
-                message: error.response?.data?.message || "Failed to update permissions",
+                message: error.response?.data?.message || t('toast.somethingWentWrong'),
                 type: "error"
             });
             console.error(error);
@@ -118,30 +117,38 @@ export default function Settings() {
         }
     };
 
-    // Get permission status for a staff member
     const getPermissionStatus = (staff, permission) => {
         return staff.permissions?.includes(permission) || false;
     };
 
-    // Filter staff based on search
     const filteredStaff = staffUsers.filter(staff =>
         staff.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         staff.email.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+    const getPermissionDescription = (staff) => {
+        const hasCustomer = getPermissionStatus(staff, 'create_customer');
+        const hasSaraf = getPermissionStatus(staff, 'create_saraf');
+        
+        if (hasCustomer && hasSaraf) return t('settings.fullPermissions');
+        if (hasCustomer) return t('settings.customerOnly');
+        if (hasSaraf) return t('settings.sarafOnly');
+        return t('settings.noPermissionsSet');
+    };
+
     if (loading) {
         return (
-            <div className="flex items-center justify-center h-64">
+            <div className="flex items-center justify-center h-64" dir={document.documentElement.dir}>
                 <div className="text-center">
                     <FaSpinner className="w-8 h-8 text-blue-600 animate-spin mx-auto mb-3" />
-                    <div className="text-xl text-gray-600">Loading staff users...</div>
+                    <div className="text-xl text-gray-600">{t('common.loading')}</div>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="p-6">
+        <div className="p-6" dir={document.documentElement.dir}>
             {toast && (
                 <Toast
                     message={toast.message}
@@ -153,9 +160,9 @@ export default function Settings() {
             <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-2">
                     <FaShieldAlt className="w-6 h-6 text-blue-600" />
-                    <h1 className="text-2xl font-bold text-gray-800">Staff Permissions</h1>
+                    <h1 className="text-2xl font-bold text-gray-800">{t('settings.title')}</h1>
                     <span className="text-sm text-gray-500 ml-2">
-                        ({staffUsers.length} staff members)
+                        ({t('settings.permissionCount', { count: staffUsers.length })})
                     </span>
                 </div>
             </div>
@@ -163,8 +170,8 @@ export default function Settings() {
             {staffUsers.length === 0 ? (
                 <div className="bg-white rounded-lg shadow p-8 text-center">
                     <FaUsers className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                    <p className="text-gray-500">No staff users found.</p>
-                    <p className="text-sm text-gray-400 mt-1">Create staff users from the Accounts page first.</p>
+                    <p className="text-gray-500">{t('settings.noStaffFound')}</p>
+                    <p className="text-sm text-gray-400 mt-1">{t('settings.createStaffFirst')}</p>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -173,12 +180,12 @@ export default function Settings() {
                         <div className="p-4 border-b border-gray-200">
                             <h2 className="font-semibold text-gray-700 flex items-center gap-2 mb-3">
                                 <FaUsers className="w-4 h-4" />
-                                Staff Members ({staffUsers.length})
+                                {t('settings.staffMembers')} ({staffUsers.length})
                             </h2>
                             <div className="relative">
                                 <input
                                     type="text"
-                                    placeholder="Search staff..."
+                                    placeholder={t('settings.searchStaff')}
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
@@ -188,7 +195,7 @@ export default function Settings() {
                         <div className="divide-y divide-gray-100 max-h-[500px] overflow-y-auto">
                             {filteredStaff.length === 0 ? (
                                 <div className="p-4 text-center text-gray-500 text-sm">
-                                    No staff members found
+                                    {t('settings.noStaffFound')}
                                 </div>
                             ) : (
                                 filteredStaff.map((staff) => {
@@ -216,12 +223,12 @@ export default function Settings() {
                                                     {hasPermissions ? (
                                                         <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full flex items-center gap-1">
                                                             <FaCheckCircle className="w-3 h-3" />
-                                                            {staff.permissions.length} permissions
+                                                            {t('settings.permissionCount', { count: staff.permissions.length })}
                                                         </span>
                                                     ) : (
                                                         <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full flex items-center gap-1">
                                                             <FaTimesCircle className="w-3 h-3" />
-                                                            No permissions
+                                                            {t('settings.nonePermissions')}
                                                         </span>
                                                     )}
                                                     <div className="flex gap-1">
@@ -253,31 +260,31 @@ export default function Settings() {
                                         <h2 className="text-xl font-semibold text-gray-800">{selectedStaff.name}</h2>
                                         <p className="text-sm text-gray-500">{selectedStaff.email}</p>
                                         <div className="flex items-center gap-2 mt-1">
-                                            <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">Staff</span>
+                                            <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">{t('common.staff')}</span>
                                             <span className="text-xs text-gray-400">|</span>
                                             <span className="text-xs text-gray-500">
-                                                Created: {selectedStaff.created_at ? new Date(selectedStaff.created_at).toLocaleDateString() : 'N/A'}
+                                                {t('settings.created', { date: selectedStaff.created_at ? new Date(selectedStaff.created_at).toLocaleDateString() : 'N/A' })}
                                             </span>
                                         </div>
                                     </div>
                                     <div className="text-right">
-                                        <div className="text-sm text-gray-500">Permissions Status</div>
+                                        <div className="text-sm text-gray-500">{t('settings.permissionStatus')}</div>
                                         {(selectedStaff.permissions && selectedStaff.permissions.length > 0) ? (
                                             <span className="text-sm text-green-600 font-medium flex items-center gap-1 justify-end">
                                                 <FaCheckCircle className="w-4 h-4" />
-                                                Active ({selectedStaff.permissions.length})
+                                                {t('settings.activePermissions', { count: selectedStaff.permissions.length })}
                                             </span>
                                         ) : (
                                             <span className="text-sm text-gray-400 font-medium flex items-center gap-1 justify-end">
                                                 <FaTimesCircle className="w-4 h-4" />
-                                                None
+                                                {t('settings.nonePermissions')}
                                             </span>
                                         )}
                                     </div>
                                 </div>
 
                                 <div className="border-t border-gray-200 pt-6">
-                                    <h3 className="text-sm font-medium text-gray-700 mb-4">Manage Permissions</h3>
+                                    <h3 className="text-sm font-medium text-gray-700 mb-4">{t('settings.managePermissions')}</h3>
                                     
                                     <div className="space-y-4">
                                         {/* Create Customer Permission */}
@@ -288,16 +295,16 @@ export default function Settings() {
                                                 <div className="flex items-center gap-2">
                                                     <FaUserCheck className={`w-4 h-4 ${permissions.create_customer ? 'text-green-600' : 'text-gray-400'}`} />
                                                     <span className={`font-medium ${permissions.create_customer ? 'text-gray-800' : 'text-gray-600'}`}>
-                                                        Create Customers
+                                                        {t('settings.createCustomers')}
                                                     </span>
                                                     {permissions.create_customer && (
                                                         <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
-                                                            Active
+                                                            {t('common.active')}
                                                         </span>
                                                     )}
                                                 </div>
                                                 <p className="text-sm text-gray-500 mt-1">
-                                                    Allow this staff member to create new customer accounts
+                                                    {t('settings.createCustomersDesc')}
                                                 </p>
                                             </div>
                                             <label className="relative inline-flex items-center cursor-pointer ml-4">
@@ -319,16 +326,16 @@ export default function Settings() {
                                                 <div className="flex items-center gap-2">
                                                     <FaUserCog className={`w-4 h-4 ${permissions.create_saraf ? 'text-yellow-600' : 'text-gray-400'}`} />
                                                     <span className={`font-medium ${permissions.create_saraf ? 'text-gray-800' : 'text-gray-600'}`}>
-                                                        Create Saraf Users
+                                                        {t('settings.createSaraf')}
                                                     </span>
                                                     {permissions.create_saraf && (
                                                         <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full">
-                                                            Active
+                                                            {t('common.active')}
                                                         </span>
                                                     )}
                                                 </div>
                                                 <p className="text-sm text-gray-500 mt-1">
-                                                    Allow this staff member to create new saraf accounts
+                                                    {t('settings.createSarafDesc')}
                                                 </p>
                                             </div>
                                             <label className="relative inline-flex items-center cursor-pointer ml-4">
@@ -348,16 +355,10 @@ export default function Settings() {
                                         <div className="flex items-center gap-2 text-sm text-blue-700">
                                             <FaShieldAlt className="w-4 h-4" />
                                             <span>
-                                                <strong>{selectedStaff.name}</strong> has 
-                                                {permissions.create_customer && permissions.create_saraf ? (
-                                                    " full permissions (can create customers and saraf)"
-                                                ) : permissions.create_customer ? (
-                                                    " permission to create customers only"
-                                                ) : permissions.create_saraf ? (
-                                                    " permission to create saraf users only"
-                                                ) : (
-                                                    " no permissions"
-                                                )}
+                                                {t('settings.hasPermissions', { 
+                                                    name: selectedStaff.name, 
+                                                    permDesc: getPermissionDescription(selectedStaff) 
+                                                })}
                                             </span>
                                         </div>
                                     </div>
@@ -366,7 +367,6 @@ export default function Settings() {
                                 <div className="mt-6 pt-6 border-t border-gray-200 flex justify-end gap-3">
                                     <button
                                         onClick={() => {
-                                            // Reset to current permissions
                                             if (selectedStaff) {
                                                 setPermissions({
                                                     create_customer: selectedStaff.permissions?.includes('create_customer') || false,
@@ -376,7 +376,7 @@ export default function Settings() {
                                         }}
                                         className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                                     >
-                                        Reset
+                                        {t('settings.reset')}
                                     </button>
                                     <button
                                         onClick={handleSavePermissions}
@@ -386,12 +386,12 @@ export default function Settings() {
                                         {saving ? (
                                             <>
                                                 <FaSpinner className="w-4 h-4 animate-spin" />
-                                                Saving...
+                                                {t('common.loading')}
                                             </>
                                         ) : (
                                             <>
                                                 <FaSave className="w-4 h-4" />
-                                                Save Permissions
+                                                {t('settings.savePermissions')}
                                             </>
                                         )}
                                     </button>
@@ -400,7 +400,7 @@ export default function Settings() {
                         ) : (
                             <div className="p-8 text-center text-gray-500">
                                 <FaUsers className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                                <p>Select a staff member to manage their permissions.</p>
+                                <p>{t('settings.selectStaff')}</p>
                             </div>
                         )}
                     </div>

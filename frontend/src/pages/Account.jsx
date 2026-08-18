@@ -1,6 +1,7 @@
 // pages/Account.jsx
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useTranslation } from 'react-i18next';
 import Table from "../components/table/Table";
 import TableHead from "../components/table/TableHead";
 import TableBody from "../components/table/TableBody";
@@ -30,6 +31,7 @@ import {
 export default function Account({ initialFilter = null }) {
     const navigate = useNavigate();
     const location = useLocation();
+    const { t } = useTranslation();
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedRole, setSelectedRole] = useState(initialFilter || "all");
@@ -69,7 +71,6 @@ export default function Account({ initialFilter = null }) {
     useEffect(() => {
         if (location.state?.filterRole) {
             setSelectedRole(location.state.filterRole);
-            // Clear the state to prevent re-applying on refresh
             window.history.replaceState({}, document.title);
         }
     }, [location.state]);
@@ -85,10 +86,13 @@ export default function Account({ initialFilter = null }) {
             setUsers(response.data.users);
         } catch (error) {
             console.error("Failed to fetch users:", error);
-            // Only redirect to login if it's a 401 error
             if (error.response?.status === 401) {
                 navigate("/login");
             }
+            setToast({
+                message: t('toast.failedToLoad'),
+                type: "error"
+            });
         } finally {
             setLoading(false);
         }
@@ -113,7 +117,6 @@ export default function Account({ initialFilter = null }) {
         setFormData((prev) => ({
             ...prev,
             role: value,
-            // Clear password if not staff
             password: value !== "staff" ? "" : prev.password,
         }));
     };
@@ -130,7 +133,7 @@ export default function Account({ initialFilter = null }) {
             // Check permissions before submitting
             if (formData.role === "staff" && !canCreateStaff) {
                 setToast({
-                    message: "You don't have permission to create staff users.",
+                    message: t('toast.noCreatePermission', { role: t('common.staff') }),
                     type: "error"
                 });
                 setFormLoading(false);
@@ -139,7 +142,7 @@ export default function Account({ initialFilter = null }) {
             
             if (formData.role === "customer" && !canCreateCustomer) {
                 setToast({
-                    message: "You don't have permission to create customers.",
+                    message: t('toast.noCreatePermission', { role: t('common.customer') }),
                     type: "error"
                 });
                 setFormLoading(false);
@@ -148,7 +151,7 @@ export default function Account({ initialFilter = null }) {
             
             if (formData.role === "saraf" && !canCreateSaraf) {
                 setToast({
-                    message: "You don't have permission to create saraf users.",
+                    message: t('toast.noCreatePermission', { role: t('common.saraf') }),
                     type: "error"
                 });
                 setFormLoading(false);
@@ -161,7 +164,6 @@ export default function Account({ initialFilter = null }) {
                 endpoint = "/create-saraf";
             }
 
-            // For customers and saraf, don't send password
             const payload = { ...formData };
             if (formData.role === "customer" || formData.role === "saraf") {
                 delete payload.password;
@@ -169,12 +171,15 @@ export default function Account({ initialFilter = null }) {
 
             const response = await api.post(endpoint, payload);
 
+            const roleDisplay = formData.role === 'staff' ? t('common.staff') : 
+                               formData.role === 'customer' ? t('common.customer') : 
+                               t('common.saraf');
+
             setToast({
-                message: response.data.message || `${formData.role} created successfully!`,
+                message: t('toast.userCreated', { role: roleDisplay }),
                 type: "success"
             });
 
-            // Reset form
             setFormData({
                 name: "",
                 email: "",
@@ -189,17 +194,17 @@ export default function Account({ initialFilter = null }) {
             if (error.response?.status === 422) {
                 setFormErrors(error.response.data.errors || {});
                 setToast({
-                    message: "Please check your input and try again.",
+                    message: t('toast.pleaseCheckInput'),
                     type: "error"
                 });
             } else if (error.response?.status === 403) {
                 setToast({
-                    message: error.response.data.message || "Unauthorized. You don't have permission to create this user type.",
+                    message: error.response.data.message || t('toast.unauthorized'),
                     type: "error"
                 });
             } else {
                 setToast({
-                    message: "Something went wrong. Please try again later.",
+                    message: t('toast.somethingWentWrong'),
                     type: "error"
                 });
                 console.error(error);
@@ -212,7 +217,7 @@ export default function Account({ initialFilter = null }) {
     const handleEdit = (user) => {
         if (!canEditDelete) {
             setToast({
-                message: "You don't have permission to edit users.",
+                message: t('toast.noEditPermission'),
                 type: "error"
             });
             return;
@@ -229,11 +234,10 @@ export default function Account({ initialFilter = null }) {
         setShowForm(true);
     };
 
-    // Open delete confirmation modal
     const openDeleteModal = (userId, userName) => {
         if (!canEditDelete) {
             setToast({
-                message: "You don't have permission to delete users.",
+                message: t('toast.noDeletePermission'),
                 type: "error"
             });
             return;
@@ -246,7 +250,6 @@ export default function Account({ initialFilter = null }) {
         });
     };
 
-    // Close delete confirmation modal
     const closeDeleteModal = () => {
         setDeleteModal({
             isOpen: false,
@@ -255,21 +258,20 @@ export default function Account({ initialFilter = null }) {
         });
     };
 
-    // Handle delete confirmation
     const handleConfirmDelete = async () => {
         const { userId, userName } = deleteModal;
         
         try {
             await api.delete(`/users/${userId}`);
             setToast({
-                message: `User "${userName}" deleted successfully!`,
+                message: t('toast.userDeleted', { name: userName }),
                 type: "success"
             });
             closeDeleteModal();
             fetchUsers();
         } catch (error) {
             setToast({
-                message: error.response?.data?.message || "Failed to delete user.",
+                message: error.response?.data?.message || t('toast.somethingWentWrong'),
                 type: "error"
             });
             console.error(error);
@@ -292,7 +294,7 @@ export default function Account({ initialFilter = null }) {
             const response = await api.put(`/users/${editingUser.id}`, payload);
 
             setToast({
-                message: response.data.message || "User updated successfully!",
+                message: response.data.message || t('toast.userUpdated'),
                 type: "success"
             });
 
@@ -311,17 +313,17 @@ export default function Account({ initialFilter = null }) {
             if (error.response?.status === 422) {
                 setFormErrors(error.response.data.errors || {});
                 setToast({
-                    message: "Please check your input and try again.",
+                    message: t('toast.pleaseCheckInput'),
                     type: "error"
                 });
             } else if (error.response?.status === 403) {
                 setToast({
-                    message: error.response.data.message || "Unauthorized. You don't have permission to update users.",
+                    message: error.response.data.message || t('toast.unauthorized'),
                     type: "error"
                 });
             } else {
                 setToast({
-                    message: "Something went wrong. Please try again later.",
+                    message: t('toast.somethingWentWrong'),
                     type: "error"
                 });
                 console.error(error);
@@ -372,12 +374,22 @@ export default function Account({ initialFilter = null }) {
     // Handle card click to filter users
     const handleCardClick = (role) => {
         setSelectedRole(role);
-        // Scroll to table
         document.getElementById('user-table')?.scrollIntoView({ behavior: 'smooth' });
     };
 
+    // Get role display name
+    const getRoleDisplay = (role) => {
+        switch (role) {
+            case 'admin': return t('common.admin');
+            case 'staff': return t('common.staff');
+            case 'customer': return t('common.customer');
+            case 'saraf': return t('common.saraf');
+            default: return role;
+        }
+    };
+
     return (
-        <div className="p-6">
+        <div className="p-6" dir={document.documentElement.dir}>
             {toast && (
                 <Toast
                     message={toast.message}
@@ -397,13 +409,13 @@ export default function Account({ initialFilter = null }) {
             {/* Page Header */}
             <div className="flex justify-between items-center mb-6">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-800">Accounts</h1>
-                    <p className="text-gray-500">Manage staff, customers, and saraf users</p>
+                    <h1 className="text-2xl font-bold text-gray-800">{t('accounts.title')}</h1>
+                    <p className="text-gray-500">{t('accounts.description')}</p>
                 </div>
                 {(canCreateStaff || canCreateCustomer || canCreateSaraf) && (
-                    <Button onClick={() => setShowForm(true)}>
+                    <Button onClick={() => setShowForm(true)} className="flex items-center gap-2">
                         <FaUserPlus className="w-4 h-4 mr-2" />
-                        Add New User
+                        {t('accounts.addNewUser')}
                     </Button>
                 )}
             </div>
@@ -416,7 +428,7 @@ export default function Account({ initialFilter = null }) {
                 >
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-sm text-gray-500">Total Users</p>
+                            <p className="text-sm text-gray-500">{t('dashboard.totalUsers')}</p>
                             <p className="text-2xl font-bold">{users.length}</p>
                         </div>
                         <FaUsers className="w-8 h-8 text-blue-500 opacity-20" />
@@ -432,7 +444,7 @@ export default function Account({ initialFilter = null }) {
                 >
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-sm text-gray-500">Staff</p>
+                            <p className="text-sm text-gray-500">{t('dashboard.staff')}</p>
                             <p className="text-2xl font-bold text-blue-600">{getRoleCount('staff')}</p>
                         </div>
                         <FaUser className="w-8 h-8 text-blue-500 opacity-20" />
@@ -448,7 +460,7 @@ export default function Account({ initialFilter = null }) {
                 >
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-sm text-gray-500">Customers</p>
+                            <p className="text-sm text-gray-500">{t('dashboard.customers')}</p>
                             <p className="text-2xl font-bold text-green-600">{getRoleCount('customer')}</p>
                         </div>
                         <FaUserFriends className="w-8 h-8 text-green-500 opacity-20" />
@@ -464,7 +476,7 @@ export default function Account({ initialFilter = null }) {
                 >
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-sm text-gray-500">Saraf</p>
+                            <p className="text-sm text-gray-500">{t('dashboard.saraf')}</p>
                             <p className="text-2xl font-bold text-yellow-600">{getRoleCount('saraf')}</p>
                         </div>
                         <FaUserTag className="w-8 h-8 text-yellow-500 opacity-20" />
@@ -484,12 +496,12 @@ export default function Account({ initialFilter = null }) {
                                 {editingUser ? (
                                     <>
                                         <FaUsers className="w-5 h-5 text-blue-600" />
-                                        <h2 className="text-xl font-bold">Edit User</h2>
+                                        <h2 className="text-xl font-bold">{t('accounts.editUser')}</h2>
                                     </>
                                 ) : (
                                     <>
                                         <FaUserPlus className="w-5 h-5 text-blue-600" />
-                                        <h2 className="text-xl font-bold">Create New User</h2>
+                                        <h2 className="text-xl font-bold">{t('accounts.createNewUser')}</h2>
                                     </>
                                 )}
                             </div>
@@ -499,12 +511,12 @@ export default function Account({ initialFilter = null }) {
                                 className="space-y-4"
                             >
                                 <div>
-                                    <Label htmlFor="name" required>Full Name</Label>
+                                    <Label htmlFor="name" required>{t('accounts.fullName')}</Label>
                                     <Input
                                         id="name"
                                         name="name"
                                         type="text"
-                                        placeholder="Enter full name"
+                                        placeholder={t('register.enterFullName')}
                                         value={formData.name}
                                         onChange={handleChange}
                                         error={formErrors.name?.[0]}
@@ -512,12 +524,12 @@ export default function Account({ initialFilter = null }) {
                                 </div>
 
                                 <div>
-                                    <Label htmlFor="email" required>Email</Label>
+                                    <Label htmlFor="email" required>{t('accounts.email')}</Label>
                                     <Input
                                         id="email"
                                         name="email"
                                         type="email"
-                                        placeholder="Enter email"
+                                        placeholder={t('register.enterEmail')}
                                         value={formData.email}
                                         onChange={handleChange}
                                         error={formErrors.email?.[0]}
@@ -525,12 +537,12 @@ export default function Account({ initialFilter = null }) {
                                 </div>
 
                                 <div>
-                                    <Label htmlFor="phone">Phone</Label>
+                                    <Label htmlFor="phone">{t('accounts.phone')}</Label>
                                     <Input
                                         id="phone"
                                         name="phone"
                                         type="text"
-                                        placeholder="Enter phone number"
+                                        placeholder={t('register.enterPhone')}
                                         value={formData.phone}
                                         onChange={handleChange}
                                         error={formErrors.phone?.[0]}
@@ -538,7 +550,7 @@ export default function Account({ initialFilter = null }) {
                                 </div>
 
                                 <div>
-                                    <Label htmlFor="role" required>Role</Label>
+                                    <Label htmlFor="role" required>{t('accounts.role')}</Label>
                                     <Select
                                         id="role"
                                         name="role"
@@ -546,13 +558,13 @@ export default function Account({ initialFilter = null }) {
                                         onChange={handleRoleChange}
                                         error={formErrors.role?.[0]}
                                     >
-                                        {canCreateStaff && <option value="staff">Staff</option>}
-                                        {canCreateCustomer && <option value="customer">Customer</option>}
-                                        {canCreateSaraf && <option value="saraf">Saraf</option>}
+                                        {canCreateStaff && <option value="staff">{t('common.staff')}</option>}
+                                        {canCreateCustomer && <option value="customer">{t('common.customer')}</option>}
+                                        {canCreateSaraf && <option value="saraf">{t('common.saraf')}</option>}
                                     </Select>
                                     {!canCreateStaff && !canCreateCustomer && !canCreateSaraf && (
                                         <p className="mt-1 text-sm text-yellow-600">
-                                            You don't have permission to create any user types.
+                                            {t('toast.noCreatePermission', { role: t('common.user') })}
                                         </p>
                                     )}
                                 </div>
@@ -560,13 +572,13 @@ export default function Account({ initialFilter = null }) {
                                 {formData.role === "staff" && (
                                     <div>
                                         <Label htmlFor="password" required={!editingUser}>
-                                            {editingUser ? "New Password (leave blank to keep current)" : "Password"}
+                                            {editingUser ? t('accounts.newPassword') : t('accounts.password')}
                                         </Label>
                                         <Input
                                             id="password"
                                             name="password"
                                             type="password"
-                                            placeholder={editingUser ? "Enter new password" : "Enter password (min 6 characters)"}
+                                            placeholder={editingUser ? t('accounts.enterNewPassword') : t('accounts.enterPassword')}
                                             value={formData.password}
                                             onChange={handleChange}
                                             error={formErrors.password?.[0]}
@@ -576,7 +588,7 @@ export default function Account({ initialFilter = null }) {
 
                                 {formData.role !== "staff" && (
                                     <p className="text-sm text-gray-500 italic">
-                                        Note: {formData.role}s don't need to login. They will be created with a default password.
+                                        {t('accounts.noteNoLogin', { role: getRoleDisplay(formData.role) })}
                                     </p>
                                 )}
 
@@ -586,14 +598,15 @@ export default function Account({ initialFilter = null }) {
                                         className="flex-1"
                                         disabled={formLoading}
                                     >
-                                        {formLoading ? "Saving..." : editingUser ? "Update User" : "Create User"}
+                                        {formLoading ? t('accounts.saving') : 
+                                         editingUser ? t('accounts.updateUser') : t('accounts.createUser')}
                                     </Button>
                                     <Button
                                         type="button"
                                         variant="secondary"
                                         onClick={handleCancel}
                                     >
-                                        Cancel
+                                        {t('accounts.cancel')}
                                     </Button>
                                 </div>
                             </Form>
@@ -609,11 +622,11 @@ export default function Account({ initialFilter = null }) {
                         <FaUsers className="w-5 h-5 text-gray-500" />
                         <h2 className="text-lg font-semibold">
                             {selectedRole === "all" 
-                                ? "All Users" 
-                                : `${selectedRole.charAt(0).toUpperCase() + selectedRole.slice(1)}s`}
+                                ? t('accounts.allUsers') 
+                                : `${getRoleDisplay(selectedRole)}s`}
                             {selectedRole !== "all" && (
                                 <span className="ml-2 text-sm font-normal text-gray-500">
-                                    ({filteredUsers.length} users)
+                                    ({t('accounts.usersCount', { count: filteredUsers.length })})
                                 </span>
                             )}
                         </h2>
@@ -623,31 +636,31 @@ export default function Account({ initialFilter = null }) {
                         onChange={(e) => setSelectedRole(e.target.value)}
                         className="w-40"
                     >
-                        <option value="all">All Users</option>
-                        <option value="admin">Admin</option>
-                        <option value="staff">Staff</option>
-                        <option value="customer">Customer</option>
-                        <option value="saraf">Saraf</option>
+                        <option value="all">{t('accounts.allUsers')}</option>
+                        <option value="admin">{t('common.admin')}</option>
+                        <option value="staff">{t('common.staff')}</option>
+                        <option value="customer">{t('common.customer')}</option>
+                        <option value="saraf">{t('common.saraf')}</option>
                     </Select>
                 </div>
 
                 {loading ? (
-                    <div className="p-8 text-center text-gray-500">Loading users...</div>
+                    <div className="p-8 text-center text-gray-500">{t('common.loading')}</div>
                 ) : filteredUsers.length === 0 ? (
                     <div className="p-8 text-center text-gray-500">
-                        No {selectedRole !== "all" ? selectedRole : ""} users found
+                        {t('accounts.noUsers')}
                     </div>
                 ) : (
                     <Table>
                         <TableHead>
                             <TableRow>
-                                <TableHeader>Name</TableHeader>
-                                <TableHeader>Email</TableHeader>
-                                <TableHeader>Phone</TableHeader>
-                                <TableHeader>Role</TableHeader>
-                                <TableHeader>Permissions</TableHeader>
-                                <TableHeader>Created By</TableHeader>
-                                <TableHeader className="text-right">Actions</TableHeader>
+                                <TableHeader>{t('table.name')}</TableHeader>
+                                <TableHeader>{t('table.email')}</TableHeader>
+                                <TableHeader>{t('table.phone')}</TableHeader>
+                                <TableHeader>{t('table.role')}</TableHeader>
+                                <TableHeader>{t('table.permissions')}</TableHeader>
+                                <TableHeader>{t('table.createdBy')}</TableHeader>
+                                <TableHeader className="text-right">{t('table.actions')}</TableHeader>
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -670,43 +683,40 @@ export default function Account({ initialFilter = null }) {
                                                 <div className="flex flex-wrap gap-1">
                                                     {user.permissions.map(perm => (
                                                         <span key={perm} className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
-                                                            {perm.replace('_', ' ')}
+                                                            {t(`permissions.${perm}`, perm.replace('_', ' '))}
                                                         </span>
                                                     ))}
                                                 </div>
                                             ) : (
-                                                <span className="text-xs text-gray-400">No permissions</span>
+                                                <span className="text-xs text-gray-400">{t('common.none')}</span>
                                             )
                                         ) : (
                                             <span className="text-xs text-gray-400">-</span>
                                         )}
                                     </TableCell>
                                     <TableCell>
-                                        {user.creator ? user.creator.name : "Self"}
+                                        {user.creator ? user.creator.name : t('common.self')}
                                     </TableCell>
                                     <TableCell className="text-right">
                                         <div className="flex items-center justify-end gap-2">
-                                            {/* Edit Button - Only admin can edit */}
                                             {canEditDelete && user.id !== userData?.id && (
                                                 <button
                                                     onClick={() => handleEdit(user)}
                                                     className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors"
-                                                    title="Edit user"
+                                                    title={t('common.edit')}
                                                 >
                                                     <FaEdit className="w-4 h-4" />
                                                 </button>
                                             )}
-                                            {/* Delete Button - Only admin can delete and not self */}
                                             {canEditDelete && user.id !== userData?.id && (
                                                 <button
                                                     onClick={() => openDeleteModal(user.id, user.name)}
                                                     className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors"
-                                                    title="Delete user"
+                                                    title={t('common.delete')}
                                                 >
                                                     <FaTrash className="w-4 h-4" />
                                                 </button>
                                             )}
-                                            {/* Show message if no actions available */}
                                             {(!canEditDelete || user.id === userData?.id) && (
                                                 <span className="text-xs text-gray-400">-</span>
                                             )}

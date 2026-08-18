@@ -1,6 +1,6 @@
-// Register.jsx
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useTranslation } from 'react-i18next';
 import Form from "../components/form/Form";
 import Input from "../components/form/Input";
 import Label from "../components/form/Label";
@@ -18,6 +18,7 @@ import {
 
 export default function Register() {
     const navigate = useNavigate();
+    const { t } = useTranslation();
 
     const [formData, setFormData] = useState({
         name: "",
@@ -55,11 +56,10 @@ export default function Register() {
         setToast(null);
 
         try {
-            // Admin registration endpoint
             const response = await api.post("/register-admin", formData);
 
             setToast({
-                message: response.data.message || "Admin registration successful! Please login.",
+                message: response.data.message || t('register.registrationSuccess'),
                 type: "success"
             });
 
@@ -71,7 +71,6 @@ export default function Register() {
                 password_confirmation: "",
             });
 
-            // Redirect to login page after successful registration
             setTimeout(() => {
                 navigate("/login");
             }, 2000);
@@ -80,17 +79,17 @@ export default function Register() {
             if (error.response?.status === 422) {
                 setErrors(error.response.data.errors || {});
                 setToast({
-                    message: "Please check your input and try again.",
+                    message: t('toast.pleaseCheckInput'),
                     type: "error"
                 });
             } else if (error.response?.status === 403) {
                 setToast({
-                    message: error.response.data.message || "Admin already registered. Please login.",
+                    message: error.response.data.message || t('register.adminAlreadyRegistered'),
                     type: "error"
                 });
             } else {
                 setToast({
-                    message: "Something went wrong. Please try again.",
+                    message: t('toast.somethingWentWrong'),
                     type: "error"
                 });
                 console.error(error);
@@ -101,7 +100,7 @@ export default function Register() {
     };
 
     return (
-        <div className="flex min-h-screen items-center justify-center bg-gray-100 px-4">
+        <div className="flex min-h-screen items-center justify-center bg-gray-100 px-4" dir={document.documentElement.dir}>
             {toast && (
                 <Toast
                     message={toast.message}
@@ -114,17 +113,17 @@ export default function Register() {
 
                 <div className="text-center mb-6">
                     <h1 className="text-3xl font-bold text-gray-800">
-                        Admin Registration
+                        {t('register.title')}
                     </h1>
                     <p className="mt-2 text-gray-500">
-                        Register as the first admin user
+                        {t('register.description')}
                     </p>
                 </div>
 
                 <Form onSubmit={handleSubmit} className="space-y-5">
 
                     <div>
-                        <Label htmlFor="name">Full Name</Label>
+                        <Label htmlFor="name">{t('register.fullNameLabel')}</Label>
                         <div className="relative">
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <FaUser className="h-5 w-5 text-gray-400" />
@@ -133,7 +132,7 @@ export default function Register() {
                                 id="name"
                                 name="name"
                                 type="text"
-                                placeholder="Enter full name"
+                                placeholder={t('register.enterFullName')}
                                 value={formData.name}
                                 onChange={handleChange}
                                 className="pl-10"
@@ -147,7 +146,7 @@ export default function Register() {
                     </div>
 
                     <div>
-                        <Label htmlFor="email">Email</Label>
+                        <Label htmlFor="email">{t('register.emailLabel')}</Label>
                         <div className="relative">
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <FaEnvelope className="h-5 w-5 text-gray-400" />
@@ -156,7 +155,7 @@ export default function Register() {
                                 id="email"
                                 name="email"
                                 type="email"
-                                placeholder="Enter email"
+                                placeholder={t('register.enterEmail')}
                                 value={formData.email}
                                 onChange={handleChange}
                                 className="pl-10"
@@ -170,7 +169,7 @@ export default function Register() {
                     </div>
 
                     <div>
-                        <Label htmlFor="phone">Phone (Optional)</Label>
+                        <Label htmlFor="phone">{t('register.phoneLabel')}</Label>
                         <div className="relative">
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <FaPhone className="h-5 w-5 text-gray-400" />
@@ -179,7 +178,7 @@ export default function Register() {
                                 id="phone"
                                 name="phone"
                                 type="text"
-                                placeholder="Enter phone number"
+                                placeholder={t('register.enterPhone')}
                                 value={formData.phone}
                                 onChange={handleChange}
                                 className="pl-10"
@@ -193,7 +192,7 @@ export default function Register() {
                     </div>
 
                     <div>
-                        <Label htmlFor="password">Password</Label>
+                        <Label htmlFor="password">{t('register.passwordLabel')}</Label>
                         <div className="relative">
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <FaLock className="h-5 w-5 text-gray-400" />
@@ -202,7 +201,7 @@ export default function Register() {
                                 id="password"
                                 name="password"
                                 type="password"
-                                placeholder="Enter password (min 6 characters)"
+                                placeholder={t('register.enterPassword')}
                                 value={formData.password}
                                 onChange={handleChange}
                                 className="pl-10"
@@ -216,7 +215,7 @@ export default function Register() {
                     </div>
 
                     <div>
-                        <Label htmlFor="password_confirmation">Confirm Password</Label>
+                        <Label htmlFor="password_confirmation">{t('register.confirmPasswordLabel')}</Label>
                         <div className="relative">
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <FaCheckCircle className="h-5 w-5 text-gray-400" />
@@ -225,7 +224,7 @@ export default function Register() {
                                 id="password_confirmation"
                                 name="password_confirmation"
                                 type="password"
-                                placeholder="Confirm password"
+                                placeholder={t('register.confirmPasswordPlaceholder')}
                                 value={formData.password_confirmation}
                                 onChange={handleChange}
                                 className="pl-10"
@@ -243,20 +242,20 @@ export default function Register() {
                         className="w-full"
                         disabled={loading}
                     >
-                        {loading ? "Registering..." : "Register Admin"}
+                        {loading ? t('register.registering') : t('register.registerButton')}
                     </Button>
 
                 </Form>
 
                 {/* Login Link */}
                 <div className="mt-6 text-center text-sm text-gray-600">
-                    Already have an account?{" "}
+                    {t('register.alreadyHaveAccount')}{" "}
                     <Link
                         to="/login"
                         className="font-medium text-blue-600 hover:underline inline-flex items-center gap-1"
                     >
                         <FaSignInAlt className="w-3 h-3" />
-                        Login
+                        {t('navigation.login')}
                     </Link>
                 </div>
 

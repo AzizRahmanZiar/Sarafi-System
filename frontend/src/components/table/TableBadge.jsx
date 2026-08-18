@@ -1,5 +1,8 @@
-// components/table/TableBadge.jsx
+import { useTranslation } from 'react-i18next';
+
 export default function TableBadge({ role }) {
+    const { t } = useTranslation();
+
     const getBadgeColor = (role) => {
         switch (role) {
             case 'admin': return 'bg-purple-100 text-purple-800';
@@ -10,9 +13,19 @@ export default function TableBadge({ role }) {
         }
     };
 
+    const getRoleDisplay = (role) => {
+        switch (role) {
+            case 'admin': return t('common.admin');
+            case 'staff': return t('common.staff');
+            case 'customer': return t('common.customer');
+            case 'saraf': return t('common.saraf');
+            default: return role;
+        }
+    };
+
     return (
         <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getBadgeColor(role)}`}>
-            {role}
+            {getRoleDisplay(role)}
         </span>
     );
 }

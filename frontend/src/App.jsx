@@ -1,12 +1,14 @@
-// App.jsx
-import { Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { useTranslation } from 'react-i18next';
+import i18n, { i18nPromise } from './i18n';
+import LoadingSpinner from "./components/LoadingSpinner";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Account from "./pages/Account";
 import Settings from "./pages/Settings";
 import Layout from "./layouts/Layout";
-import { useEffect } from "react";
 
 // Protected Route component
 const ProtectedRoute = ({ children, requiredRoles = [], requiredPermissions = [] }) => {
@@ -32,17 +34,13 @@ const ProtectedRoute = ({ children, requiredRoles = [], requiredPermissions = []
         return <Navigate to="/login" replace />;
     }
 
-    // Check if user has required role
     if (requiredRoles.length > 0 && !requiredRoles.includes(user.role)) {
         return <Navigate to="/dashboard" replace />;
     }
 
-    // Check if user has required permissions
     if (requiredPermissions.length > 0) {
         const userPermissions = user.permissions || [];
         const hasAllPermissions = requiredPermissions.every(perm => userPermissions.includes(perm));
-        
-        // If user is admin, they have all permissions
         if (user.role !== 'admin' && !hasAllPermissions) {
             return <Navigate to="/dashboard" replace />;
         }
@@ -52,21 +50,26 @@ const ProtectedRoute = ({ children, requiredRoles = [], requiredPermissions = []
 };
 
 function App() {
-    const location = useLocation();
+    const [isInitialized, setIsInitialized] = useState(false);
 
-    // Debug logging
     useEffect(() => {
-        console.log("Current path:", location.pathname);
-        console.log("Current state:", location.state);
-    }, [location]);
+        i18nPromise.then(() => {
+            setIsInitialized(true);
+            const lng = i18n.language || 'en';
+            document.documentElement.dir = lng === 'ps' || lng === 'dr' ? 'rtl' : 'ltr';
+            document.documentElement.lang = lng;
+        });
+    }, []);
+
+    if (!isInitialized) {
+        return <LoadingSpinner />;
+    }
 
     return (
         <Routes>
-            {/* Public Routes */}
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             
-            {/* Protected Routes with Layout */}
             <Route
                 path="/dashboard"
                 element={
@@ -78,7 +81,6 @@ function App() {
                 <Route index element={<Dashboard />} />
                 <Route path="accounts" element={<Account />} />
                 
-                {/* Admin only routes */}
                 <Route 
                     path="staff-permissions" 
                     element={
@@ -101,7 +103,6 @@ function App() {
                 />
             </Route>
             
-            {/* Redirect root to login */}
             <Route path="/" element={<Navigate to="/login" replace />} />
             <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>

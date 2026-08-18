@@ -1,5 +1,5 @@
-// components/DeleteConfirmationModal.jsx
 import { useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { FaExclamationTriangle, FaTimes } from 'react-icons/fa';
 
 export default function DeleteConfirmationModal({ 
@@ -8,9 +8,9 @@ export default function DeleteConfirmationModal({
     onConfirm, 
     userName 
 }) {
+    const { t, ready } = useTranslation();
     const modalRef = useRef(null);
 
-    // Close modal on Escape key press
     useEffect(() => {
         const handleEscape = (e) => {
             if (e.key === 'Escape' && isOpen) {
@@ -21,7 +21,6 @@ export default function DeleteConfirmationModal({
         return () => document.removeEventListener('keydown', handleEscape);
     }, [isOpen, onClose]);
 
-    // Prevent body scroll when modal is open
     useEffect(() => {
         if (isOpen) {
             document.body.style.overflow = 'hidden';
@@ -33,11 +32,14 @@ export default function DeleteConfirmationModal({
         };
     }, [isOpen]);
 
-    // Handle click outside modal
     const handleOverlayClick = (e) => {
         if (e.target === e.currentTarget) {
             onClose();
         }
+    };
+
+    const getText = (key, fallback) => {
+        return ready ? t(key) : fallback;
     };
 
     if (!isOpen) return null;
@@ -61,7 +63,7 @@ export default function DeleteConfirmationModal({
                             <FaExclamationTriangle className="w-5 h-5 text-red-600" />
                         </div>
                         <h2 id="delete-modal-title" className="text-lg font-semibold text-gray-800">
-                            Delete User
+                            {getText('deleteModal.title', 'Delete User')}
                         </h2>
                     </div>
                     <button
@@ -76,10 +78,10 @@ export default function DeleteConfirmationModal({
                 {/* Body */}
                 <div className="p-6">
                     <p className="text-gray-600">
-                        Are you sure you want to delete <span className="font-semibold text-gray-800">"{userName}"</span>?
+                        {getText('deleteModal.message', 'Are you sure you want to delete "{name}"?').replace('{name}', userName)}
                     </p>
                     <p className="mt-2 text-sm text-gray-500">
-                        This action cannot be undone. All data associated with this user will be permanently removed.
+                        {getText('deleteModal.warning', 'This action cannot be undone. All data associated with this user will be permanently removed.')}
                     </p>
                 </div>
 
@@ -89,13 +91,13 @@ export default function DeleteConfirmationModal({
                         onClick={onClose}
                         className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-colors"
                     >
-                        Cancel
+                        {getText('deleteModal.cancel', 'Cancel')}
                     </button>
                     <button
                         onClick={onConfirm}
                         className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors"
                     >
-                        Delete User
+                        {getText('deleteModal.confirm', 'Delete User')}
                     </button>
                 </div>
             </div>
