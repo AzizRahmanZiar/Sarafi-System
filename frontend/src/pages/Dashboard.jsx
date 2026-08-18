@@ -1,41 +1,90 @@
+// Dashboard.jsx
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Toast from "../components/Toast";
+import api from "../services/api";
 import { 
+    FaUsers, 
     FaUser, 
-    FaEnvelope, 
-    FaPhone, 
-    FaUserTag, 
-    FaCheckCircle,
-    FaSignOutAlt 
+    FaUserFriends, 
+    FaUserTag,
+    FaSignOutAlt,
+    FaArrowRight
 } from "react-icons/fa";
 
 export default function Dashboard() {
     const navigate = useNavigate();
     const [user, setUser] = useState(null);
+    const [stats, setStats] = useState({
+        total: 0,
+        staff: 0,
+        customers: 0,
+        saraf: 0
+    });
     const [loading, setLoading] = useState(true);
     const [toast, setToast] = useState(null);
 
     useEffect(() => {
-        // Get user data from localStorage
+        // Check authentication
+        const token = localStorage.getItem("token");
         const userData = localStorage.getItem("user");
         
-        if (!userData) {
-            // If no user data, redirect to login
-            navigate("/login");
+        if (!token || !userData) {
+            navigate("/login", { replace: true });
             return;
         }
 
         try {
             const parsedUser = JSON.parse(userData);
             setUser(parsedUser);
+            fetchUserStats();
         } catch (error) {
             console.error("Error parsing user data:", error);
-            navigate("/login");
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
+            navigate("/login", { replace: true });
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    // Fetch user statistics
+    const fetchUserStats = async () => {
+        try {
+            const token = localStorage.getItem("token");
+            if (!token) {
+                navigate("/login", { replace: true });
+                return;
+            }
+
+            const response = await api.get("/users");
+            const users = response.data.users || [];
+            
+            const staffCount = users.filter(u => u.role === "staff").length;
+            const customerCount = users.filter(u => u.role === "customer").length;
+            const sarafCount = users.filter(u => u.role === "saraf").length;
+            
+            setStats({
+                total: users.length,
+                staff: staffCount,
+                customers: customerCount,
+                saraf: sarafCount
+            });
+        } catch (error) {
+            console.error("Failed to fetch user stats:", error);
+            if (error.response?.status === 401) {
+                localStorage.removeItem("token");
+                localStorage.removeItem("user");
+                navigate("/login", { replace: true });
+                return;
+            }
+            setToast({
+                message: "Could not load user statistics",
+                type: "error"
+            });
         } finally {
             setLoading(false);
         }
-    }, [navigate]);
+    };
 
     // Handle logout
     const handleLogout = () => {
@@ -46,8 +95,18 @@ export default function Dashboard() {
             type: "success"
         });
         setTimeout(() => {
-            navigate("/login");
+            navigate("/login", { replace: true });
         }, 1500);
+    };
+
+    // Navigate to accounts page with filter - FIXED
+    const navigateToAccounts = (role = "all") => {
+        console.log("Navigating to accounts with role:", role);
+        // Use relative path since we're already in /dashboard
+        navigate("accounts", { 
+            state: { filterRole: role },
+            replace: false // Don't replace, just push
+        });
     };
 
     if (loading) {
@@ -70,12 +129,17 @@ export default function Dashboard() {
                 />
             )}
 
-            <div className="mx-auto max-w-4xl">
+            <div className="mx-auto max-w-6xl">
                 {/* Header with Logout */}
                 <div className="mb-6 flex items-center justify-between">
-                    <h1 className="text-3xl font-bold text-gray-800">
-                        Dashboard
-                    </h1>
+                    <div>
+                        <h1 className="text-3xl font-bold text-gray-800">
+                            Dashboard
+                        </h1>
+                        <p className="text-gray-500 mt-1">
+                            Welcome back, {user?.name || "User"}!
+                        </p>
+                    </div>
                     <button
                         onClick={handleLogout}
                         className="flex items-center gap-2 rounded-lg bg-red-500 px-4 py-2 text-white hover:bg-red-600 transition-colors"
@@ -85,114 +149,114 @@ export default function Dashboard() {
                     </button>
                 </div>
 
-                {/* Welcome Card */}
-                <div className="mb-6 rounded-lg bg-white p-6 shadow-md">
-                    <div className="flex items-center gap-3">
-                        <div className="bg-blue-100 p-3 rounded-full">
-                            <FaUser className="w-6 h-6 text-blue-600" />
+                {/* Quick Stats Cards - Clickable */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    {/* Total Users Card */}
+                    <div 
+                        className="bg-white rounded-lg shadow-md p-6 cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border-2 border-transparent hover:border-blue-500"
+                        onClick={() => navigateToAccounts("all")}
+                    >
+                        <div className="flex items-center justify-between mb-2">
+                            <div className="bg-blue-100 p-3 rounded-full">
+                                <FaUsers className="w-6 h-6 text-blue-600" />
+                            </div>
                         </div>
-                        <div>
-                            <h2 className="text-2xl font-semibold text-gray-800">
-                                Welcome back, {user?.name || "User"}!
-                            </h2>
-                            <p className="mt-1 text-gray-500">
-                                Welcome to the Money Exchange Management System.
-                            </p>
+                        <p className="text-sm text-gray-500 font-medium">Total Users</p>
+                        <p className="text-3xl font-bold text-gray-800 mt-1">{stats.total}</p>
+                        <p className="text-xs text-blue-600 mt-2 flex items-center gap-1">
+                            View all users
+                            <FaArrowRight className="w-3 h-3" />
+                        </p>
+                    </div>
+
+                    {/* Staff Card */}
+                    <div 
+                        className="bg-white rounded-lg shadow-md p-6 cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border-2 border-transparent hover:border-blue-500"
+                        onClick={() => navigateToAccounts("staff")}
+                    >
+                        <div className="flex items-center justify-between mb-2">
+                            <div className="bg-blue-100 p-3 rounded-full">
+                                <FaUser className="w-6 h-6 text-blue-600" />
+                            </div>
                         </div>
+                        <p className="text-sm text-gray-500 font-medium">Staff</p>
+                        <p className="text-3xl font-bold text-blue-600 mt-1">{stats.staff}</p>
+                        <p className="text-xs text-blue-600 mt-2 flex items-center gap-1">
+                            View staff members
+                            <FaArrowRight className="w-3 h-3" />
+                        </p>
+                    </div>
+
+                    {/* Customers Card */}
+                    <div 
+                        className="bg-white rounded-lg shadow-md p-6 cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border-2 border-transparent hover:border-green-500"
+                        onClick={() => navigateToAccounts("customer")}
+                    >
+                        <div className="flex items-center justify-between mb-2">
+                            <div className="bg-green-100 p-3 rounded-full">
+                                <FaUserFriends className="w-6 h-6 text-green-600" />
+                            </div>
+                        </div>
+                        <p className="text-sm text-gray-500 font-medium">Customers</p>
+                        <p className="text-3xl font-bold text-green-600 mt-1">{stats.customers}</p>
+                        <p className="text-xs text-green-600 mt-2 flex items-center gap-1">
+                            View customers
+                            <FaArrowRight className="w-3 h-3" />
+                        </p>
+                    </div>
+
+                    {/* Saraf Card */}
+                    <div 
+                        className="bg-white rounded-lg shadow-md p-6 cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border-2 border-transparent hover:border-yellow-500"
+                        onClick={() => navigateToAccounts("saraf")}
+                    >
+                        <div className="flex items-center justify-between mb-2">
+                            <div className="bg-yellow-100 p-3 rounded-full">
+                                <FaUserTag className="w-6 h-6 text-yellow-600" />
+                            </div>
+                        </div>
+                        <p className="text-sm text-gray-500 font-medium">Saraf</p>
+                        <p className="text-3xl font-bold text-yellow-600 mt-1">{stats.saraf}</p>
+                        <p className="text-xs text-yellow-600 mt-2 flex items-center gap-1">
+                            View saraf users
+                            <FaArrowRight className="w-3 h-3" />
+                        </p>
                     </div>
                 </div>
 
-                {/* User Information Card */}
-                <div className="rounded-lg bg-white p-6 shadow-md">
-                    <h3 className="mb-4 text-xl font-semibold text-gray-700 flex items-center gap-2">
-                        <FaUser className="w-5 h-5 text-gray-500" />
-                        Your Profile Information
-                    </h3>
-                    
-                    <div className="space-y-3">
-                        <div className="flex items-center border-b border-gray-100 pb-3">
-                            <span className="w-32 font-medium text-gray-600 flex items-center gap-2">
-                                <FaUser className="w-4 h-4 text-gray-400" />
-                                Full Name
-                            </span>
-                            <span className="text-gray-800">{user?.name || "N/A"}</span>
-                        </div>
-                        
-                        <div className="flex items-center border-b border-gray-100 pb-3">
-                            <span className="w-32 font-medium text-gray-600 flex items-center gap-2">
-                                <FaEnvelope className="w-4 h-4 text-gray-400" />
-                                Email
-                            </span>
-                            <span className="text-gray-800">{user?.email || "N/A"}</span>
-                        </div>
-                        
-                        <div className="flex items-center border-b border-gray-100 pb-3">
-                            <span className="w-32 font-medium text-gray-600 flex items-center gap-2">
-                                <FaPhone className="w-4 h-4 text-gray-400" />
-                                Phone
-                            </span>
-                            <span className="text-gray-800">{user?.phone || "N/A"}</span>
-                        </div>
-                        
-                        <div className="flex items-center border-b border-gray-100 pb-3">
-                            <span className="w-32 font-medium text-gray-600 flex items-center gap-2">
-                                <FaUserTag className="w-4 h-4 text-gray-400" />
-                                Role
-                            </span>
-                            <span className="text-gray-800">
-                                <span className={`rounded-full px-3 py-1 text-sm font-medium ${
-                                    user?.role === "admin" 
-                                        ? "bg-purple-100 text-purple-700" 
-                                        : "bg-blue-100 text-blue-700"
-                                }`}>
-                                    {user?.role || "Staff"}
-                                </span>
-                            </span>
-                        </div>
-                        
-                        <div className="flex items-center">
-                            <span className="w-32 font-medium text-gray-600 flex items-center gap-2">
-                                <FaCheckCircle className="w-4 h-4 text-gray-400" />
-                                Status
-                            </span>
-                            <span className="text-gray-800">
-                                <span className="rounded-full bg-green-100 px-3 py-1 text-sm font-medium text-green-700 flex items-center gap-1">
-                                    <FaCheckCircle className="w-3 h-3" />
-                                    Active
-                                </span>
-                            </span>
-                        </div>
+                {/* Quick Actions */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg shadow-md p-6 text-white">
+                        <h3 className="text-lg font-semibold mb-2">Manage Staff</h3>
+                        <p className="text-blue-100 text-sm mb-4">Add or manage staff members</p>
+                        <button 
+                            onClick={() => navigateToAccounts("staff")}
+                            className="bg-white text-blue-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-50 transition-colors"
+                        >
+                            View Staff
+                        </button>
                     </div>
-                </div>
 
-                {/* Quick Stats */}
-                <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-                    <div className="bg-white p-4 rounded-lg shadow">
-                        <div className="flex items-center gap-2 text-sm text-gray-500">
-                            <FaUserTag className="w-4 h-4" />
-                            Role
-                        </div>
-                        <div className="text-xl font-bold text-gray-800 mt-1">
-                            {user?.role === "admin" ? "Administrator" : "Staff Member"}
-                        </div>
+                    <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-lg shadow-md p-6 text-white">
+                        <h3 className="text-lg font-semibold mb-2">Customer Management</h3>
+                        <p className="text-green-100 text-sm mb-4">View and manage customers</p>
+                        <button 
+                            onClick={() => navigateToAccounts("customer")}
+                            className="bg-white text-green-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-50 transition-colors"
+                        >
+                            View Customers
+                        </button>
                     </div>
-                    
-                    <div className="bg-white p-4 rounded-lg shadow">
-                        <div className="flex items-center gap-2 text-sm text-gray-500">
-                            <FaCheckCircle className="w-4 h-4" />
-                            Account Status
-                        </div>
-                        <div className="text-xl font-bold text-green-600 mt-1">Active</div>
-                    </div>
-                    
-                    <div className="bg-white p-4 rounded-lg shadow">
-                        <div className="flex items-center gap-2 text-sm text-gray-500">
-                            <FaUser className="w-4 h-4" />
-                            Member Since
-                        </div>
-                        <div className="text-xl font-bold text-gray-800 mt-1">
-                            {new Date().toLocaleDateString()}
-                        </div>
+
+                    <div className="bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-lg shadow-md p-6 text-white">
+                        <h3 className="text-lg font-semibold mb-2">Saraf Management</h3>
+                        <p className="text-yellow-100 text-sm mb-4">Manage saraf users</p>
+                        <button 
+                            onClick={() => navigateToAccounts("saraf")}
+                            className="bg-white text-yellow-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-yellow-50 transition-colors"
+                        >
+                            View Saraf
+                        </button>
                     </div>
                 </div>
             </div>

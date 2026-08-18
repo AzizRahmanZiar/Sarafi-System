@@ -11,6 +11,7 @@ import { FaEnvelope, FaLock, FaUserPlus } from "react-icons/fa";
 
 export default function Login() {
     const navigate = useNavigate();
+    const [isChecking, setIsChecking] = useState(true);
 
     const [formData, setFormData] = useState({
         email: "",
@@ -21,25 +22,38 @@ export default function Login() {
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState({});
     const [toast, setToast] = useState(null);
-    const [adminExists, setAdminExists] = useState(true); // Default to true
+    const [adminExists, setAdminExists] = useState(true);
 
-    // Check if admin exists
+    // Check if user is already logged in - FIXED: Only runs once
+    useEffect(() => {
+        const token = localStorage.getItem("token");
+        if (token) {
+            // User is already logged in, redirect to dashboard
+            navigate("/dashboard", { replace: true });
+            return;
+        }
+        setIsChecking(false);
+    }, [navigate]); // Added navigate to dependencies but it won't cause loop
+
+    // Check admin existence - FIXED: Only runs once
     useEffect(() => {
         const checkAdmin = async () => {
             try {
-                // You'll need to add this endpoint to your backend
                 const response = await api.get('/check-admin');
                 setAdminExists(response.data.exists);
             } catch (error) {
                 console.error('Failed to check admin:', error);
-                // If we can't check, assume admin exists
                 setAdminExists(true);
             }
         };
-        checkAdmin();
-    }, []);
+        
+        // Only check if not already checking and no token
+        if (!isChecking) {
+            checkAdmin();
+        }
+    }, [isChecking]);
 
-    // Load saved email if remember me was checked
+    // Load saved email - FIXED: Only runs once
     useEffect(() => {
         const savedEmail = localStorage.getItem("rememberedEmail");
         if (savedEmail) {
@@ -53,12 +67,10 @@ export default function Login() {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-
         setFormData((prev) => ({
             ...prev,
             [name]: value,
         }));
-
         if (errors[name]) {
             setErrors((prev) => ({
                 ...prev,
@@ -76,6 +88,9 @@ export default function Login() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // Prevent multiple submissions
+        if (loading) return;
 
         setLoading(true);
         setErrors({});
@@ -103,22 +118,14 @@ export default function Login() {
                 localStorage.removeItem("rememberedEmail");
             }
 
-            // Show success toast
             setToast({
                 message: "Login successful! Redirecting...",
                 type: "success"
             });
 
-            // Redirect to dashboard based on role
-            const userRole = response.data.user.role;
+            // Redirect after a delay
             setTimeout(() => {
-                if (userRole === 'admin') {
-                    navigate("/admin/dashboard");
-                } else if (userRole === 'staff') {
-                    navigate("/staff/dashboard");
-                } else {
-                    navigate("/dashboard");
-                }
+                navigate("/dashboard", { replace: true });
             }, 1500);
 
         } catch (error) {
@@ -155,6 +162,17 @@ export default function Login() {
             setLoading(false);
         }
     };
+
+    // Show loading while checking auth
+    if (isChecking) {
+        return (
+            <div className="flex min-h-screen items-center justify-center bg-gray-100">
+                <div className="text-center">
+                    <div className="text-xl text-gray-600">Loading...</div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="flex min-h-screen items-center justify-center bg-gray-100 px-4">

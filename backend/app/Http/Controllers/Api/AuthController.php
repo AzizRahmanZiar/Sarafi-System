@@ -37,6 +37,7 @@ class AuthController extends Controller
                 'phone'      => $validated['phone'] ?? null,
                 'password'   => Hash::make($validated['password']),
                 'role'       => 'admin',
+                'permissions' => ['create_customer', 'create_saraf', 'create_staff'],
             ]);
 
             return response()->json([
@@ -57,7 +58,10 @@ class AuthController extends Controller
     public function createStaff(Request $request)
     {
         try {
-            if (!Auth::user() || !Auth::user()->isAdmin()) {
+            $user = Auth::user();
+            
+            // Only admin can create staff
+            if (!$user || !$user->isAdmin()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Unauthorized. Only admin can create staff.'
@@ -69,21 +73,24 @@ class AuthController extends Controller
                 'email'    => 'required|email|unique:users,email',
                 'phone'    => 'nullable|string|max:20',
                 'password' => 'required|string|min:6',
+                'permissions' => 'nullable|array',
+                'permissions.*' => 'string|in:create_customer,create_saraf'
             ]);
 
-            $user = User::create([
+            $staff = User::create([
                 'name'       => $validated['name'],
                 'email'      => $validated['email'],
                 'phone'      => $validated['phone'] ?? null,
                 'password'   => Hash::make($validated['password']),
                 'role'       => 'staff',
                 'created_by' => Auth::id(),
+                'permissions' => $validated['permissions'] ?? [],
             ]);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Staff created successfully.',
-                'user'    => $user->only(['id', 'name', 'email', 'role']),
+                'user'    => $staff->only(['id', 'name', 'email', 'role', 'permissions']),
             ], 201);
 
         } catch (\Exception $e) {
@@ -94,14 +101,17 @@ class AuthController extends Controller
         }
     }
 
-    // Create Customer user (Admin only)
+    // Create Customer user (Admin or Staff with permission)
     public function createCustomer(Request $request)
     {
         try {
-            if (!Auth::user() || !Auth::user()->isAdmin()) {
+            $user = Auth::user();
+            
+            // Check if user has permission
+            if (!$user || (!$user->isAdmin() && !$user->hasPermission('create_customer'))) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Unauthorized. Only admin can create customers.'
+                    'message' => 'Unauthorized. You don\'t have permission to create customers.'
                 ], 403);
             }
 
@@ -109,22 +119,22 @@ class AuthController extends Controller
                 'name'     => 'required|string|max:255',
                 'email'    => 'required|email|unique:users,email',
                 'phone'    => 'nullable|string|max:20',
-                // Customer doesn't need password (they don't login)
             ]);
 
-            $user = User::create([
+            $customer = User::create([
                 'name'       => $validated['name'],
                 'email'      => $validated['email'],
                 'phone'      => $validated['phone'] ?? null,
-                'password'   => Hash::make('customer123'), // Default password
+                'password'   => Hash::make('customer123'),
                 'role'       => 'customer',
                 'created_by' => Auth::id(),
+                'permissions' => [],
             ]);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Customer created successfully.',
-                'user'    => $user->only(['id', 'name', 'email', 'role']),
+                'user'    => $customer->only(['id', 'name', 'email', 'role']),
             ], 201);
 
         } catch (\Exception $e) {
@@ -135,14 +145,17 @@ class AuthController extends Controller
         }
     }
 
-    // Create Saraf user (Admin only)
+    // Create Saraf user (Admin or Staff with permission)
     public function createSaraf(Request $request)
     {
         try {
-            if (!Auth::user() || !Auth::user()->isAdmin()) {
+            $user = Auth::user();
+            
+            // Check if user has permission
+            if (!$user || (!$user->isAdmin() && !$user->hasPermission('create_saraf'))) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Unauthorized. Only admin can create saraf.'
+                    'message' => 'Unauthorized. You don\'t have permission to create saraf users.'
                 ], 403);
             }
 
@@ -150,28 +163,203 @@ class AuthController extends Controller
                 'name'     => 'required|string|max:255',
                 'email'    => 'required|email|unique:users,email',
                 'phone'    => 'nullable|string|max:20',
-                // Saraf doesn't need password (they don't login)
             ]);
 
-            $user = User::create([
+            $saraf = User::create([
                 'name'       => $validated['name'],
                 'email'      => $validated['email'],
                 'phone'      => $validated['phone'] ?? null,
-                'password'   => Hash::make('saraf123'), // Default password
+                'password'   => Hash::make('saraf123'),
                 'role'       => 'saraf',
                 'created_by' => Auth::id(),
+                'permissions' => [],
             ]);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Saraf created successfully.',
-                'user'    => $user->only(['id', 'name', 'email', 'role']),
+                'user'    => $saraf->only(['id', 'name', 'email', 'role']),
             ], 201);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Saraf creation failed: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    // Update user permissions (Admin only)
+    public function updateUserPermissions(Request $request, $id)
+    {
+        try {
+            if (!Auth::user() || !Auth::user()->isAdmin()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized. Only admin can update permissions.'
+                ], 403);
+            }
+
+            $user = User::find($id);
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User not found.'
+                ], 404);
+            }
+
+            // Only staff can have permissions
+            if ($user->role !== 'staff') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Only staff users can have permissions.'
+                ], 422);
+            }
+
+            $validated = $request->validate([
+                'permissions' => 'required|array',
+                'permissions.*' => 'string|in:create_customer,create_saraf'
+            ]);
+
+            $user->permissions = $validated['permissions'];
+            $user->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Permissions updated successfully.',
+                'permissions' => $user->permissions
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Update failed: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    // Get user permissions (Admin only)
+    public function getUserPermissions($id)
+    {
+        try {
+            if (!Auth::user() || !Auth::user()->isAdmin()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized.'
+                ], 403);
+            }
+
+            $user = User::find($id);
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User not found.'
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'permissions' => $user->permissions ?? []
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch permissions: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    // Update user (Admin only)
+    public function updateUser(Request $request, $id)
+    {
+        try {
+            if (!Auth::user() || !Auth::user()->isAdmin()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized.'
+                ], 403);
+            }
+
+            $user = User::find($id);
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User not found.'
+                ], 404);
+            }
+
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'email' => 'required|email|unique:users,email,' . $id,
+                'phone' => 'nullable|string|max:20',
+                'password' => 'nullable|string|min:6',
+                'role' => 'required|in:admin,staff,customer,saraf'
+            ]);
+
+            $user->name = $validated['name'];
+            $user->email = $validated['email'];
+            $user->phone = $validated['phone'] ?? null;
+            $user->role = $validated['role'];
+            
+            if (!empty($validated['password'])) {
+                $user->password = Hash::make($validated['password']);
+            }
+
+            $user->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'User updated successfully.',
+                'user' => $user
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Update failed: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    // Delete user (Admin only)
+    public function deleteUser($id)
+    {
+        try {
+            if (!Auth::user() || !Auth::user()->isAdmin()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized.'
+                ], 403);
+            }
+
+            $user = User::find($id);
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User not found.'
+                ], 404);
+            }
+
+            // Prevent deleting yourself
+            if ($user->id === Auth::id()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'You cannot delete your own account.'
+                ], 403);
+            }
+
+            $user->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'User deleted successfully.'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Delete failed: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -209,7 +397,7 @@ class AuthController extends Controller
             return response()->json([
                 'success' => true,
                 'token'   => $token,
-                'user'    => $user->only(['id', 'name', 'email', 'role']),
+                'user'    => $user->only(['id', 'name', 'email', 'role', 'permissions']),
                 'message' => 'Login successful!'
             ], 200);
 
@@ -221,11 +409,66 @@ class AuthController extends Controller
         }
     }
 
-    // Get all users created by admin
+    // Get all users - Modified to allow staff to see their created users
     public function getUsers()
     {
         try {
-            if (!Auth::user() || !Auth::user()->isAdmin()) {
+            $user = Auth::user();
+            
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized.'
+                ], 401);
+            }
+
+            // Admin can see all users they created
+            if ($user->isAdmin()) {
+                $users = User::where('created_by', Auth::id())
+                    ->orWhere('id', Auth::id())
+                    ->with('creator')
+                    ->get();
+            } 
+            // Staff can see users they created (customers and saraf) plus themselves
+            else if ($user->isStaff()) {
+                $users = User::where('created_by', Auth::id())
+                    ->whereIn('role', ['customer', 'saraf'])
+                    ->with('creator')
+                    ->get();
+                
+                // Also include the staff member themselves
+                $staffUser = User::where('id', Auth::id())->with('creator')->first();
+                if ($staffUser) {
+                    $users = $users->push($staffUser);
+                }
+            } 
+            // Other roles cannot access
+            else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized. You don\'t have permission to view users.'
+                ], 403);
+            }
+
+            return response()->json([
+                'success' => true,
+                'users' => $users
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch users: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    // Get users created by staff (only customers and saraf)
+    public function getMyUsers()
+    {
+        try {
+            $user = Auth::user();
+            
+            if (!$user || !$user->isStaff()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Unauthorized.'
@@ -233,9 +476,15 @@ class AuthController extends Controller
             }
 
             $users = User::where('created_by', Auth::id())
-                ->orWhere('id', Auth::id())
+                ->whereIn('role', ['customer', 'saraf'])
                 ->with('creator')
                 ->get();
+
+            // Also include the staff member themselves
+            $staffUser = User::where('id', Auth::id())->with('creator')->first();
+            if ($staffUser) {
+                $users = $users->push($staffUser);
+            }
 
             return response()->json([
                 'success' => true,

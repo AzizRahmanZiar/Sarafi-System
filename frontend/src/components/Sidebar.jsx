@@ -1,4 +1,4 @@
-// Sidebar.jsx
+// layouts/Sidebar.jsx
 import { useState, useEffect } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import api from "../services/api";
@@ -6,8 +6,8 @@ import {
     FaTachometerAlt, 
     FaUsers, 
     FaCog, 
-    FaTasks,
-    FaSignOutAlt 
+    FaSignOutAlt,
+    FaShieldAlt
 } from "react-icons/fa";
 
 export default function Sidebar() {
@@ -28,7 +28,6 @@ export default function Sidebar() {
 
     // Check user role
     const isAdmin = user?.role === "admin";
-    const isStaff = user?.role === "staff";
 
     const handleLogout = async () => {
         try {
@@ -55,9 +54,9 @@ export default function Sidebar() {
 
             {/* Navigation */}
             <nav className="flex-1 p-4 space-y-2">
-                {/* Dashboard link based on role */}
+                {/* Dashboard link */}
                 <NavLink
-                    to={isAdmin ? "/admin/dashboard" : "/staff/dashboard"}
+                    to="/dashboard"
                     className={({ isActive }) =>
                         `block rounded-lg px-4 py-2.5 transition-colors ${
                             isActive
@@ -72,6 +71,23 @@ export default function Sidebar() {
                     </span>
                 </NavLink>
 
+                {/* Accounts link - visible to both admin and staff */}
+                <NavLink
+                    to="/dashboard/accounts"
+                    className={({ isActive }) =>
+                        `block rounded-lg px-4 py-2.5 transition-colors ${
+                            isActive
+                                ? "bg-blue-600"
+                                : "hover:bg-slate-700"
+                        }`
+                    }
+                >
+                    <span className="flex items-center gap-3">
+                        <FaUsers className="w-5 h-5" />
+                        Accounts
+                    </span>
+                </NavLink>
+
                 {/* Admin-only links */}
                 {isAdmin && (
                     <>
@@ -82,7 +98,7 @@ export default function Sidebar() {
                         </div>
 
                         <NavLink
-                            to="/admin/dashboard/accounts"
+                            to="/dashboard/staff-permissions"
                             className={({ isActive }) =>
                                 `block rounded-lg px-4 py-2.5 transition-colors ${
                                     isActive
@@ -92,53 +108,12 @@ export default function Sidebar() {
                             }
                         >
                             <span className="flex items-center gap-3">
-                                <FaUsers className="w-5 h-5" />
-                                Accounts
+                                <FaShieldAlt className="w-5 h-5" />
+                                Settings system
                             </span>
                         </NavLink>
 
-                        <NavLink
-                            to="/admin/dashboard/settings"
-                            className={({ isActive }) =>
-                                `block rounded-lg px-4 py-2.5 transition-colors ${
-                                    isActive
-                                        ? "bg-blue-600"
-                                        : "hover:bg-slate-700"
-                                }`
-                            }
-                        >
-                            <span className="flex items-center gap-3">
-                                <FaCog className="w-5 h-5" />
-                                Settings
-                            </span>
-                        </NavLink>
-                    </>
-                )}
-
-                {/* Staff-only links */}
-                {isStaff && (
-                    <>
-                        <div className="pt-4 mt-4 border-t border-slate-700">
-                            <p className="px-4 text-xs text-slate-400 uppercase tracking-wider mb-2">
-                                Staff Panel
-                            </p>
-                        </div>
-
-                        <NavLink
-                            to="/staff/dashboard/tasks"
-                            className={({ isActive }) =>
-                                `block rounded-lg px-4 py-2.5 transition-colors ${
-                                    isActive
-                                        ? "bg-blue-600"
-                                        : "hover:bg-slate-700"
-                                }`
-                            }
-                        >
-                            <span className="flex items-center gap-3">
-                                <FaTasks className="w-5 h-5" />
-                                Tasks
-                            </span>
-                        </NavLink>
+                      
                     </>
                 )}
             </nav>

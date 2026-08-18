@@ -18,6 +18,7 @@ class User extends Authenticatable
         'password',
         'role',
         'created_by',
+        'permissions', // Add this field
     ];
 
     protected $hidden = [
@@ -25,34 +26,43 @@ class User extends Authenticatable
         'remember_token',
     ];
 
-    // Role check methods
+    protected $casts = [
+        'permissions' => 'array', // Cast permissions as array
+    ];
+
+    // Check if user is admin
     public function isAdmin()
     {
         return $this->role === 'admin';
     }
 
+    // Check if user is staff
     public function isStaff()
     {
         return $this->role === 'staff';
     }
 
-    public function isCustomer()
+    // Check if user has specific permission
+    public function hasPermission($permission)
     {
-        return $this->role === 'customer';
+        if ($this->isAdmin()) {
+            return true; // Admin has all permissions
+        }
+
+        if (!$this->permissions) {
+            return false;
+        }
+
+        return in_array($permission, $this->permissions);
     }
 
-    public function isSaraf()
-    {
-        return $this->role === 'saraf';
-    }
-
-    // Relationship with creator
+    // Get creator relationship
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    // Users created by this user
+    // Get users created by this user
     public function createdUsers()
     {
         return $this->hasMany(User::class, 'created_by');

@@ -1,6 +1,6 @@
 // pages/Account.jsx
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import Table from "../components/table/Table";
 import TableHead from "../components/table/TableHead";
 import TableBody from "../components/table/TableBody";
@@ -8,13 +8,13 @@ import TableRow from "../components/table/TableRow";
 import TableHeader from "../components/table/TableHeader";
 import TableCell from "../components/table/TableCell";
 import TableBadge from "../components/table/TableBadge";
-import TableActions from "../components/table/TableActions";
 import Form from "../components/form/Form";
 import Input from "../components/form/Input";
 import Label from "../components/form/Label";
 import Select from "../components/form/Select";
 import Button from "../components/form/Button";
 import Toast from "../components/Toast";
+import DeleteConfirmationModal from "../components/DeleteConfirmationModal";
 import api from "../services/api";
 import { 
     FaUserPlus, 
@@ -22,18 +22,27 @@ import {
     FaUserTie, 
     FaUser, 
     FaUserTag,
-    FaUserCog,
-    FaUserFriends
+    FaUserFriends,
+    FaEdit,
+    FaTrash
 } from "react-icons/fa";
 
-export default function Account() {
+export default function Account({ initialFilter = null }) {
     const navigate = useNavigate();
+    const location = useLocation();
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [selectedRole, setSelectedRole] = useState("all");
+    const [selectedRole, setSelectedRole] = useState(initialFilter || "all");
     const [showForm, setShowForm] = useState(false);
     const [editingUser, setEditingUser] = useState(null);
     const [toast, setToast] = useState(null);
+    
+    // Delete modal state
+    const [deleteModal, setDeleteModal] = useState({
+        isOpen: false,
+        userId: null,
+        userName: ""
+    });
 
     // Form state
     const [formData, setFormData] = useState({
@@ -47,6 +56,24 @@ export default function Account() {
     const [formErrors, setFormErrors] = useState({});
     const [formLoading, setFormLoading] = useState(false);
 
+    // Get current user data
+    const userData = JSON.parse(localStorage.getItem("user") || "{}");
+
+    // Check permissions
+    const canCreateStaff = userData?.role === 'admin'; // Only admin can create staff
+    const canCreateCustomer = userData?.role === 'admin' || userData?.permissions?.includes('create_customer');
+    const canCreateSaraf = userData?.role === 'admin' || userData?.permissions?.includes('create_saraf');
+    const canEditDelete = userData?.role === 'admin'; // Only admin can edit/delete
+
+    // Handle filter from navigation state
+    useEffect(() => {
+        if (location.state?.filterRole) {
+            setSelectedRole(location.state.filterRole);
+            // Clear the state to prevent re-applying on refresh
+            window.history.replaceState({}, document.title);
+        }
+    }, [location.state]);
+
     useEffect(() => {
         fetchUsers();
     }, []);
@@ -58,6 +85,7 @@ export default function Account() {
             setUsers(response.data.users);
         } catch (error) {
             console.error("Failed to fetch users:", error);
+            // Only redirect to login if it's a 401 error
             if (error.response?.status === 401) {
                 navigate("/login");
             }
@@ -98,6 +126,35 @@ export default function Account() {
 
         try {
             let endpoint = "/create-staff";
+            
+            // Check permissions before submitting
+            if (formData.role === "staff" && !canCreateStaff) {
+                setToast({
+                    message: "You don't have permission to create staff users.",
+                    type: "error"
+                });
+                setFormLoading(false);
+                return;
+            }
+            
+            if (formData.role === "customer" && !canCreateCustomer) {
+                setToast({
+                    message: "You don't have permission to create customers.",
+                    type: "error"
+                });
+                setFormLoading(false);
+                return;
+            }
+            
+            if (formData.role === "saraf" && !canCreateSaraf) {
+                setToast({
+                    message: "You don't have permission to create saraf users.",
+                    type: "error"
+                });
+                setFormLoading(false);
+                return;
+            }
+
             if (formData.role === "customer") {
                 endpoint = "/create-customer";
             } else if (formData.role === "saraf") {
@@ -137,7 +194,7 @@ export default function Account() {
                 });
             } else if (error.response?.status === 403) {
                 setToast({
-                    message: error.response.data.message || "Unauthorized. Only admin can create users.",
+                    message: error.response.data.message || "Unauthorized. You don't have permission to create this user type.",
                     type: "error"
                 });
             } else {
@@ -153,6 +210,14 @@ export default function Account() {
     };
 
     const handleEdit = (user) => {
+        if (!canEditDelete) {
+            setToast({
+                message: "You don't have permission to edit users.",
+                type: "error"
+            });
+            return;
+        }
+        
         setEditingUser(user);
         setFormData({
             name: user.name,
@@ -164,24 +229,51 @@ export default function Account() {
         setShowForm(true);
     };
 
-    const handleDelete = async (userId) => {
-        if (!window.confirm("Are you sure you want to delete this user?")) {
+    // Open delete confirmation modal
+    const openDeleteModal = (userId, userName) => {
+        if (!canEditDelete) {
+            setToast({
+                message: "You don't have permission to delete users.",
+                type: "error"
+            });
             return;
         }
+        
+        setDeleteModal({
+            isOpen: true,
+            userId: userId,
+            userName: userName
+        });
+    };
 
+    // Close delete confirmation modal
+    const closeDeleteModal = () => {
+        setDeleteModal({
+            isOpen: false,
+            userId: null,
+            userName: ""
+        });
+    };
+
+    // Handle delete confirmation
+    const handleConfirmDelete = async () => {
+        const { userId, userName } = deleteModal;
+        
         try {
             await api.delete(`/users/${userId}`);
             setToast({
-                message: "User deleted successfully!",
+                message: `User "${userName}" deleted successfully!`,
                 type: "success"
             });
+            closeDeleteModal();
             fetchUsers();
         } catch (error) {
             setToast({
-                message: "Failed to delete user.",
+                message: error.response?.data?.message || "Failed to delete user.",
                 type: "error"
             });
             console.error(error);
+            closeDeleteModal();
         }
     };
 
@@ -220,6 +312,11 @@ export default function Account() {
                 setFormErrors(error.response.data.errors || {});
                 setToast({
                     message: "Please check your input and try again.",
+                    type: "error"
+                });
+            } else if (error.response?.status === 403) {
+                setToast({
+                    message: error.response.data.message || "Unauthorized. You don't have permission to update users.",
                     type: "error"
                 });
             } else {
@@ -272,6 +369,13 @@ export default function Account() {
         }
     };
 
+    // Handle card click to filter users
+    const handleCardClick = (role) => {
+        setSelectedRole(role);
+        // Scroll to table
+        document.getElementById('user-table')?.scrollIntoView({ behavior: 'smooth' });
+    };
+
     return (
         <div className="p-6">
             {toast && (
@@ -282,21 +386,34 @@ export default function Account() {
                 />
             )}
 
+            {/* Delete Confirmation Modal */}
+            <DeleteConfirmationModal
+                isOpen={deleteModal.isOpen}
+                onClose={closeDeleteModal}
+                onConfirm={handleConfirmDelete}
+                userName={deleteModal.userName}
+            />
+
             {/* Page Header */}
             <div className="flex justify-between items-center mb-6">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-800">Accounts</h1>
                     <p className="text-gray-500">Manage staff, customers, and saraf users</p>
                 </div>
-                <Button onClick={() => setShowForm(true)}>
-                    <FaUserPlus className="w-4 h-4 mr-2" />
-                    Add New User
-                </Button>
+                {(canCreateStaff || canCreateCustomer || canCreateSaraf) && (
+                    <Button onClick={() => setShowForm(true)}>
+                        <FaUserPlus className="w-4 h-4 mr-2" />
+                        Add New User
+                    </Button>
+                )}
             </div>
 
-            {/* Stats Cards */}
+            {/* Stats Cards - Clickable */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                <div className="bg-white p-4 rounded-lg shadow">
+                <div 
+                    className="bg-white p-4 rounded-lg shadow cursor-pointer hover:shadow-lg transition-shadow duration-200 border-2 border-transparent hover:border-blue-500"
+                    onClick={() => handleCardClick("all")}
+                >
                     <div className="flex items-center justify-between">
                         <div>
                             <p className="text-sm text-gray-500">Total Users</p>
@@ -304,8 +421,15 @@ export default function Account() {
                         </div>
                         <FaUsers className="w-8 h-8 text-blue-500 opacity-20" />
                     </div>
+                    {selectedRole === "all" && (
+                        <div className="mt-2 h-1 bg-blue-500 rounded-full"></div>
+                    )}
                 </div>
-                <div className="bg-white p-4 rounded-lg shadow">
+                
+                <div 
+                    className="bg-white p-4 rounded-lg shadow cursor-pointer hover:shadow-lg transition-shadow duration-200 border-2 border-transparent hover:border-blue-500"
+                    onClick={() => handleCardClick("staff")}
+                >
                     <div className="flex items-center justify-between">
                         <div>
                             <p className="text-sm text-gray-500">Staff</p>
@@ -313,8 +437,15 @@ export default function Account() {
                         </div>
                         <FaUser className="w-8 h-8 text-blue-500 opacity-20" />
                     </div>
+                    {selectedRole === "staff" && (
+                        <div className="mt-2 h-1 bg-blue-600 rounded-full"></div>
+                    )}
                 </div>
-                <div className="bg-white p-4 rounded-lg shadow">
+                
+                <div 
+                    className="bg-white p-4 rounded-lg shadow cursor-pointer hover:shadow-lg transition-shadow duration-200 border-2 border-transparent hover:border-green-500"
+                    onClick={() => handleCardClick("customer")}
+                >
                     <div className="flex items-center justify-between">
                         <div>
                             <p className="text-sm text-gray-500">Customers</p>
@@ -322,8 +453,15 @@ export default function Account() {
                         </div>
                         <FaUserFriends className="w-8 h-8 text-green-500 opacity-20" />
                     </div>
+                    {selectedRole === "customer" && (
+                        <div className="mt-2 h-1 bg-green-600 rounded-full"></div>
+                    )}
                 </div>
-                <div className="bg-white p-4 rounded-lg shadow">
+                
+                <div 
+                    className="bg-white p-4 rounded-lg shadow cursor-pointer hover:shadow-lg transition-shadow duration-200 border-2 border-transparent hover:border-yellow-500"
+                    onClick={() => handleCardClick("saraf")}
+                >
                     <div className="flex items-center justify-between">
                         <div>
                             <p className="text-sm text-gray-500">Saraf</p>
@@ -331,6 +469,9 @@ export default function Account() {
                         </div>
                         <FaUserTag className="w-8 h-8 text-yellow-500 opacity-20" />
                     </div>
+                    {selectedRole === "saraf" && (
+                        <div className="mt-2 h-1 bg-yellow-600 rounded-full"></div>
+                    )}
                 </div>
             </div>
 
@@ -405,10 +546,15 @@ export default function Account() {
                                         onChange={handleRoleChange}
                                         error={formErrors.role?.[0]}
                                     >
-                                        <option value="staff">Staff</option>
-                                        <option value="customer">Customer</option>
-                                        <option value="saraf">Saraf</option>
+                                        {canCreateStaff && <option value="staff">Staff</option>}
+                                        {canCreateCustomer && <option value="customer">Customer</option>}
+                                        {canCreateSaraf && <option value="saraf">Saraf</option>}
                                     </Select>
+                                    {!canCreateStaff && !canCreateCustomer && !canCreateSaraf && (
+                                        <p className="mt-1 text-sm text-yellow-600">
+                                            You don't have permission to create any user types.
+                                        </p>
+                                    )}
                                 </div>
 
                                 {formData.role === "staff" && (
@@ -457,11 +603,20 @@ export default function Account() {
             )}
 
             {/* Users Table */}
-            <div className="bg-white rounded-lg shadow">
+            <div id="user-table" className="bg-white rounded-lg shadow">
                 <div className="p-4 border-b border-gray-200 flex justify-between items-center">
                     <div className="flex items-center gap-2">
                         <FaUsers className="w-5 h-5 text-gray-500" />
-                        <h2 className="text-lg font-semibold">User List</h2>
+                        <h2 className="text-lg font-semibold">
+                            {selectedRole === "all" 
+                                ? "All Users" 
+                                : `${selectedRole.charAt(0).toUpperCase() + selectedRole.slice(1)}s`}
+                            {selectedRole !== "all" && (
+                                <span className="ml-2 text-sm font-normal text-gray-500">
+                                    ({filteredUsers.length} users)
+                                </span>
+                            )}
+                        </h2>
                     </div>
                     <Select
                         value={selectedRole}
@@ -479,7 +634,9 @@ export default function Account() {
                 {loading ? (
                     <div className="p-8 text-center text-gray-500">Loading users...</div>
                 ) : filteredUsers.length === 0 ? (
-                    <div className="p-8 text-center text-gray-500">No users found</div>
+                    <div className="p-8 text-center text-gray-500">
+                        No {selectedRole !== "all" ? selectedRole : ""} users found
+                    </div>
                 ) : (
                     <Table>
                         <TableHead>
@@ -488,6 +645,7 @@ export default function Account() {
                                 <TableHeader>Email</TableHeader>
                                 <TableHeader>Phone</TableHeader>
                                 <TableHeader>Role</TableHeader>
+                                <TableHeader>Permissions</TableHeader>
                                 <TableHeader>Created By</TableHeader>
                                 <TableHeader className="text-right">Actions</TableHeader>
                             </TableRow>
@@ -507,14 +665,52 @@ export default function Account() {
                                         <TableBadge role={user.role} />
                                     </TableCell>
                                     <TableCell>
+                                        {user.role === 'staff' ? (
+                                            user.permissions && user.permissions.length > 0 ? (
+                                                <div className="flex flex-wrap gap-1">
+                                                    {user.permissions.map(perm => (
+                                                        <span key={perm} className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
+                                                            {perm.replace('_', ' ')}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <span className="text-xs text-gray-400">No permissions</span>
+                                            )
+                                        ) : (
+                                            <span className="text-xs text-gray-400">-</span>
+                                        )}
+                                    </TableCell>
+                                    <TableCell>
                                         {user.creator ? user.creator.name : "Self"}
                                     </TableCell>
                                     <TableCell className="text-right">
-                                        <TableActions
-                                            onEdit={() => handleEdit(user)}
-                                            onDelete={() => handleDelete(user.id)}
-                                            showView={false}
-                                        />
+                                        <div className="flex items-center justify-end gap-2">
+                                            {/* Edit Button - Only admin can edit */}
+                                            {canEditDelete && user.id !== userData?.id && (
+                                                <button
+                                                    onClick={() => handleEdit(user)}
+                                                    className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors"
+                                                    title="Edit user"
+                                                >
+                                                    <FaEdit className="w-4 h-4" />
+                                                </button>
+                                            )}
+                                            {/* Delete Button - Only admin can delete and not self */}
+                                            {canEditDelete && user.id !== userData?.id && (
+                                                <button
+                                                    onClick={() => openDeleteModal(user.id, user.name)}
+                                                    className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors"
+                                                    title="Delete user"
+                                                >
+                                                    <FaTrash className="w-4 h-4" />
+                                                </button>
+                                            )}
+                                            {/* Show message if no actions available */}
+                                            {(!canEditDelete || user.id === userData?.id) && (
+                                                <span className="text-xs text-gray-400">-</span>
+                                            )}
+                                        </div>
                                     </TableCell>
                                 </TableRow>
                             ))}
