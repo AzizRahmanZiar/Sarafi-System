@@ -1,20 +1,27 @@
+// App.jsx
 import { useState, useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
-import { useTranslation } from 'react-i18next';
-import i18n, { i18nPromise } from './i18n';
+import { useTranslation } from "react-i18next";
+import i18n, { i18nPromise } from "./i18n";
+
 import LoadingSpinner from "./components/LoadingSpinner";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Account from "./pages/Account";
 import Settings from "./pages/Settings";
+import Transactions from "./pages/Transactions";
 import Layout from "./layouts/Layout";
 
 // Protected Route component
-const ProtectedRoute = ({ children, requiredRoles = [], requiredPermissions = [] }) => {
+const ProtectedRoute = ({
+    children,
+    requiredRoles = [],
+    requiredPermissions = [],
+}) => {
     const token = localStorage.getItem("token");
     const userData = localStorage.getItem("user");
-    
+
     if (!token) {
         return <Navigate to="/login" replace />;
     }
@@ -34,14 +41,20 @@ const ProtectedRoute = ({ children, requiredRoles = [], requiredPermissions = []
         return <Navigate to="/login" replace />;
     }
 
-    if (requiredRoles.length > 0 && !requiredRoles.includes(user.role)) {
+    if (
+        requiredRoles.length > 0 &&
+        !requiredRoles.includes(user.role)
+    ) {
         return <Navigate to="/dashboard" replace />;
     }
 
     if (requiredPermissions.length > 0) {
         const userPermissions = user.permissions || [];
-        const hasAllPermissions = requiredPermissions.every(perm => userPermissions.includes(perm));
-        if (user.role !== 'admin' && !hasAllPermissions) {
+        const hasAllPermissions = requiredPermissions.every((perm) =>
+            userPermissions.includes(perm)
+        );
+
+        if (user.role !== "admin" && !hasAllPermissions) {
             return <Navigate to="/dashboard" replace />;
         }
     }
@@ -51,16 +64,30 @@ const ProtectedRoute = ({ children, requiredRoles = [], requiredPermissions = []
 
 function App() {
     const [isInitialized, setIsInitialized] = useState(false);
+    const { t, i18n } = useTranslation();
 
     useEffect(() => {
         i18nPromise.then(() => {
             setIsInitialized(true);
-            const lng = i18n.language || 'en';
-            document.documentElement.dir = lng === 'ps' || lng === 'dr' ? 'rtl' : 'ltr';
+
+            const lng = i18n.language || "en";
+
+            document.documentElement.dir =
+                lng === "ps" || lng === "dr" ? "rtl" : "ltr";
+
             document.documentElement.lang = lng;
-            document.body.dir = lng === 'ps' || lng === 'dr' ? 'rtl' : 'ltr';
+
+            document.body.dir =
+                lng === "ps" || lng === "dr" ? "rtl" : "ltr";
         });
     }, []);
+
+    // Update page title when language changes
+    useEffect(() => {
+        if (isInitialized) {
+            document.title = t("app.name");
+        }
+    }, [i18n.language, isInitialized, t]);
 
     if (!isInitialized) {
         return <LoadingSpinner />;
@@ -70,7 +97,7 @@ function App() {
         <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            
+
             <Route
                 path="/dashboard"
                 element={
@@ -81,29 +108,34 @@ function App() {
             >
                 <Route index element={<Dashboard />} />
                 <Route path="accounts" element={<Account />} />
-                
-                <Route 
-                    path="staff-permissions" 
+                <Route path="transactions" element={<Transactions />} />
+
+                <Route
+                    path="staff-permissions"
                     element={
-                        <ProtectedRoute requiredRoles={['admin']}>
+                        <ProtectedRoute requiredRoles={["admin"]}>
                             <Settings />
                         </ProtectedRoute>
-                    } 
+                    }
                 />
-                
-                <Route 
-                    path="settings" 
+
+                <Route
+                    path="settings"
                     element={
-                        <ProtectedRoute requiredRoles={['admin']}>
+                        <ProtectedRoute requiredRoles={["admin"]}>
                             <div className="p-6">
-                                <h1 className="text-2xl font-bold text-gray-800">Settings</h1>
-                                <p className="text-gray-500 mt-2">Admin settings page</p>
+                                <h1 className="text-2xl font-bold text-gray-800">
+                                    Settings
+                                </h1>
+                                <p className="text-gray-500 mt-2">
+                                    Admin settings page
+                                </p>
                             </div>
                         </ProtectedRoute>
-                    } 
+                    }
                 />
             </Route>
-            
+
             <Route path="/" element={<Navigate to="/login" replace />} />
             <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>

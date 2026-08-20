@@ -1,3 +1,4 @@
+// components/Sidebar.jsx
 import { useState, useEffect, useRef } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
@@ -8,7 +9,9 @@ import {
     FaTachometerAlt, 
     FaUsers, 
     FaShieldAlt,
-    FaUserCircle
+    FaUserCircle,
+    FaExchangeAlt,
+    FaMoneyBillWave
 } from "react-icons/fa";
 
 export default function Sidebar() {
@@ -102,6 +105,7 @@ export default function Sidebar() {
     const accountsText = getText('navigation.accounts', 'Accounts');
     const adminPanelText = getText('navigation.adminPanel', 'Admin Panel');
     const staffPermissionsText = getText('navigation.staffPermissions', 'Staff Permissions');
+    const transactionsText = getText('navigation.transactions', 'Transactions');
     const appName = getText('app.name', 'Sarafi');
 
     // Get current RTL state
@@ -138,6 +142,21 @@ export default function Sidebar() {
                         <span className={`sidebar-link-content flex items-center gap-3 ${currentIsRtl ? 'flex-row-reverse' : ''}`}>
                             <FaTachometerAlt className={`sidebar-icon w-5 h-5 flex-shrink-0 ${currentIsRtl ? 'order-last' : ''}`} />
                             <span className={`sidebar-link-text flex-1 ${currentIsRtl ? 'text-right' : 'text-left'}`}>{dashboardText}</span>
+                        </span>
+                    </NavLink>
+
+                    {/* Transactions Link */}
+                    <NavLink
+                        to="/dashboard/transactions"
+                        className={({ isActive }) =>
+                            `sidebar-link block rounded-lg px-4 py-2.5 transition-colors ${
+                                isActive ? "bg-blue-600" : "hover:bg-slate-700"
+                            } ${currentIsRtl ? 'text-right' : 'text-left'}`
+                        }
+                    >
+                        <span className={`sidebar-link-content flex items-center gap-3 ${currentIsRtl ? 'flex-row-reverse' : ''}`}>
+                            <FaExchangeAlt className={`sidebar-icon w-5 h-5 flex-shrink-0 ${currentIsRtl ? 'order-last' : ''}`} />
+                            <span className={`sidebar-link-text flex-1 ${currentIsRtl ? 'text-right' : 'text-left'}`}>{transactionsText}</span>
                         </span>
                     </NavLink>
 
@@ -200,7 +219,6 @@ export default function Sidebar() {
                                 {displayRole}
                             </p>
                         </div>
-                        <FaUserCircle className={`sidebar-user-icon w-4 h-4 text-slate-400 flex-shrink-0 ${currentIsRtl ? 'order-first' : ''}`} />
                     </div>
                 </div>
             </aside>

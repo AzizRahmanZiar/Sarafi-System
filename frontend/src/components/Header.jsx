@@ -78,7 +78,6 @@ export default function Header() {
 
     const displayName = user?.name || getText('common.user', 'User');
     const displayRole = getRoleDisplay(user?.role);
-    const dashboardText = getText('navigation.dashboard', 'Dashboard');
 
     const isRtl = isRTL || document.documentElement.dir === 'rtl';
 
@@ -97,29 +96,25 @@ export default function Header() {
                 className={`flex h-16 items-center justify-between border-b bg-white px-6 ${isRtl ? 'rtl-header' : ''}`}
                 dir={isRtl ? 'rtl' : 'ltr'}
             >
-                <h2 className={`text-xl font-semibold ${isRtl ? 'text-right' : ''}`}>
-                    {dashboardText}
-                </h2>
-
-                <div className={`flex items-center gap-4 ${isRtl ? 'flex-row-reverse' : ''}`}>
+                {/* Left side - Language Switcher */}
+                <div className={`flex items-center ${isRtl ? 'flex-row-reverse' : ''}`}>
                     <LanguageSwitcher />
+                </div>
 
-                    <div 
-                        ref={avatarRef}
-                        className={`flex items-center gap-3 cursor-pointer group ${isRtl ? 'flex-row-reverse' : ''}`}
-                        onClick={() => setIsProfileModalOpen(true)}
-                    >
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-colors shadow-sm flex-shrink-0">
-                            {getInitials(user?.name)}
-                        </div>
-                        <div className={`hidden sm:block ${isRtl ? 'text-right' : 'text-left'}`}>
-                            <p className="font-medium text-gray-800 group-hover:text-blue-600 transition-colors">
-                                {displayName}
-                            </p>
-                            <p className="text-xs text-gray-400">
-                                {displayRole}
-                            </p>
-                        </div>
+                {/* Right side - User Profile */}
+                <div 
+                    ref={avatarRef}
+                    className={`flex items-center gap-3 cursor-pointer group ${isRtl ? 'flex-row-reverse' : ''}`}
+                    onClick={() => setIsProfileModalOpen(true)}
+                >
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-colors shadow-sm flex-shrink-0">
+                        {getInitials(user?.name)}
+                    </div>
+                    <div className={`hidden sm:block ${isRtl ? 'text-right' : 'text-left'}`}>
+                        <p className="font-medium text-gray-800 group-hover:text-blue-600 transition-colors">
+                            {displayName}
+                        </p>
+                       
                     </div>
                 </div>
             </header>

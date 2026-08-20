@@ -2,9 +2,10 @@
   "app": {
     "name": "Sarafi"
   },
-  "common": {
+   "common": {
     "loading": "Loading...",
     "save": "Save",
+    "saveChanges": "Save Changes",
     "cancel": "Cancel",
     "delete": "Delete",
     "edit": "Edit",
@@ -30,9 +31,13 @@
     "admin": "Admin",
     "staff": "Staff",
     "customer": "Customer",
-    "saraf": "Saraf"
+    "saraf": "Saraf",
+    "create": "Create",
+    "update": "Update",
+    "close": "Close"
   },
   "navigation": {
+    "transactions": "Transactions",
     "dashboard": "Dashboard",
     "accounts": "Accounts",
     "settings": "Settings",
@@ -96,7 +101,6 @@
     "passwordOptional": "Password",
     "selectRole": "Select Role",
     "saving": "Saving...",
-    "cancel": "Cancel",
     "creating": "Creating...",
     "updating": "Updating..."
   },
@@ -125,9 +129,40 @@
     "createStaffFirst": "Create staff users from the Accounts page first.",
     "selectStaff": "Select a staff member to manage their permissions.",
     "activePermissions": "Active ({{count}})",
-    "nonePermissions": "None"
+    "nonePermissions": "None",
+    "currency": {
+      "title": "Currency Rates",
+      "addCurrency": "Add Currency",
+      "editCurrency": "Edit Currency",
+      "defaultCurrency": "Default Currency",
+      "rates": "Exchange Rates",
+      "addRate": "Add Rate",
+      "removeRate": "Remove Rate",
+      "rateFor": "Rate for",
+      "noRates": "No rates added",
+      "rateLabel": "1 {{code}} = ?",
+      "defaultLabel": "Default Currency",
+      "baseRate": "Base Rate",
+      "exchangeRates": "Exchange Rates",
+      "currencyName": "Currency Name",
+      "currencyCode": "Currency Code",
+      "symbol": "Symbol",
+      "codePlaceholder": "e.g., USD",
+      "namePlaceholder": "e.g., US Dollar",
+      "symbolPlaceholder": "e.g., $, €, £",
+      "ratePlaceholder": "e.g., 65",
+      "setDefault": "Set as Default",
+      "deleteConfirm": "Are you sure you want to delete {{name}}?",
+      "createdSuccess": "Currency created successfully!",
+      "updatedSuccess": "Currency updated successfully!",
+      "deletedSuccess": "Currency deleted successfully!",
+      "defaultUpdated": "Default currency updated!",
+      "failedToLoad": "Failed to load currencies",
+      "failedToCreate": "Failed to create currency",
+      "failedToUpdate": "Failed to update currency",
+      "failedToDelete": "Failed to delete currency"
+    }
   },
-  
   "login": {
     "title": "Login",
     "description": "Login to your account",
@@ -146,7 +181,6 @@
     "emailLabel": "Email",
     "passwordLabel": "Password"
   },
-
   "register": {
     "title": "Admin Registration",
     "description": "Register as the first admin user",
@@ -168,11 +202,11 @@
     "passwordLabel": "Password",
     "confirmPasswordLabel": "Confirm Password"
   },
-  "toast": {
-    "userCreated": "{{role}} created successfully!",
+   "toast": {
+    "userCreated": "{{role}} user created successfully!",
     "userUpdated": "User updated successfully!",
     "userDeleted": "User \"{{name}}\" deleted successfully!",
-    "permissionsUpdated": "Permissions updated for {{name}}",
+    "permissionsUpdated": "Permissions for {{name}} updated successfully!",
     "logoutSuccess": "Logged out successfully!",
     "loginSuccess": "Login successful!",
     "userNotFound": "User not found",
@@ -184,7 +218,14 @@
     "unauthorized": "Unauthorized. You don't have permission to perform this action.",
     "somethingWentWrong": "Something went wrong. Please try again later.",
     "failedToLoad": "Failed to load users",
-    "failedToLoadStaff": "Failed to load staff users"
+    "failedToLoadStaff": "Failed to load staff users",
+    "currencyCreated": "Currency created successfully!",
+    "currencyUpdated": "Currency updated successfully!",
+    "currencyDeleted": "Currency deleted successfully!",
+    "defaultCurrencyUpdated": "Default currency updated successfully!",
+    "staffCreated": "Staff member {{name}} created successfully!",
+    "customerCreated": "Customer {{name}} created successfully!",
+    "sarafCreated": "Saraf {{name}} created successfully!"
   },
   "validation": {
     "fieldRequired": "This field is required",

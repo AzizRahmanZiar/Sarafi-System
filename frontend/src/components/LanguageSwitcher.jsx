@@ -10,9 +10,9 @@ export default function LanguageSwitcher() {
     const dropdownRef = useRef(null);
 
     const languages = [
-        { code: 'en', name: 'English', flag: '🇬🇧' },
-        { code: 'ps', name: 'پښتو', flag: '🇦🇫' },
-        { code: 'dr', name: 'دری', flag: '🇦🇫' },
+        { code: 'en', name: 'English'},
+        { code: 'ps', name: 'پښتو'},
+        { code: 'dr', name: 'دری'},
     ];
 
     useEffect(() => {
@@ -47,8 +47,6 @@ export default function LanguageSwitcher() {
                 title="Select Language"
             >
                 <FaGlobe className="w-4 h-4 flex-shrink-0" />
-                <span className="text-sm font-medium">{currentLanguage.name}</span>
-                <span className="text-xs text-gray-400">▼</span>
             </button>
 
             {isOpen && (
@@ -61,11 +59,8 @@ export default function LanguageSwitcher() {
                                 i18n.language === lang.code ? 'bg-blue-50 text-blue-600' : 'text-gray-700'
                             } ${isRtl ? 'text-right flex-row-reverse' : 'text-left'}`}
                         >
-                            <span>{lang.flag}</span>
+                            
                             <span>{lang.name}</span>
-                            {i18n.language === lang.code && (
-                                <span className={`${isRtl ? 'mr-auto' : 'ml-auto'} text-blue-600`}>✓</span>
-                            )}
                         </button>
                     ))}
                 </div>

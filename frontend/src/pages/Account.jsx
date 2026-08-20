@@ -1,4 +1,4 @@
-// pages/Account.jsx
+// pages/Account.jsx - Fixed cancel button translation
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
@@ -62,10 +62,10 @@ export default function Account({ initialFilter = null }) {
     const userData = JSON.parse(localStorage.getItem("user") || "{}");
 
     // Check permissions
-    const canCreateStaff = userData?.role === 'admin'; // Only admin can create staff
+    const canCreateStaff = userData?.role === 'admin';
     const canCreateCustomer = userData?.role === 'admin' || userData?.permissions?.includes('create_customer');
     const canCreateSaraf = userData?.role === 'admin' || userData?.permissions?.includes('create_saraf');
-    const canEditDelete = userData?.role === 'admin'; // Only admin can edit/delete
+    const canEditDelete = userData?.role === 'admin';
 
     // Handle filter from navigation state
     useEffect(() => {
@@ -130,7 +130,6 @@ export default function Account({ initialFilter = null }) {
         try {
             let endpoint = "/create-staff";
             
-            // Check permissions before submitting
             if (formData.role === "staff" && !canCreateStaff) {
                 setToast({
                     message: t('toast.noCreatePermission', { role: t('common.staff') }),
@@ -294,7 +293,7 @@ export default function Account({ initialFilter = null }) {
             const response = await api.put(`/users/${editingUser.id}`, payload);
 
             setToast({
-                message: response.data.message || t('toast.userUpdated'),
+                message: t('toast.userUpdated'),
                 type: "success"
             });
 
@@ -606,7 +605,7 @@ export default function Account({ initialFilter = null }) {
                                         variant="secondary"
                                         onClick={handleCancel}
                                     >
-                                        {t('accounts.cancel')}
+                                        {t('common.cancel')} {/* FIXED: Changed from accounts.cancel to common.cancel */}
                                     </Button>
                                 </div>
                             </Form>

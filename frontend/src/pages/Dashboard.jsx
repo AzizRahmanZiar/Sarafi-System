@@ -1,3 +1,4 @@
+// pages/Dashboard.jsx
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
@@ -9,12 +10,16 @@ import {
     FaUserFriends, 
     FaUserTag,
     FaSignOutAlt,
-    FaArrowRight
+    FaArrowRight,
+    FaArrowLeft
 } from "react-icons/fa";
+import { useLanguage } from "../context/LanguageContext";
 
 export default function Dashboard() {
     const navigate = useNavigate();
     const { t } = useTranslation();
+    const { isRTL } = useLanguage();
+    const isRtl = isRTL || document.documentElement.dir === 'rtl';
     const [user, setUser] = useState(null);
     const [stats, setStats] = useState({
         total: 0,
@@ -108,6 +113,9 @@ export default function Dashboard() {
         });
     };
 
+    // Get the correct arrow icon based on RTL
+    const ArrowIcon = isRtl ? FaArrowLeft : FaArrowRight;
+
     if (loading) {
         return (
             <div className="flex min-h-screen items-center justify-center">
@@ -163,8 +171,8 @@ export default function Dashboard() {
                         <p className="text-sm text-gray-500 font-medium">{t('dashboard.totalUsers')}</p>
                         <p className="text-3xl font-bold text-gray-800 mt-1">{stats.total}</p>
                         <p className="text-xs text-blue-600 mt-2 flex items-center gap-1">
-                            {t('dashboard.viewAll')}
-                            <FaArrowRight className="w-3 h-3" />
+                            <span>{t('dashboard.viewAll')}</span>
+                            <ArrowIcon className="w-3 h-3" />
                         </p>
                     </div>
 
@@ -181,8 +189,8 @@ export default function Dashboard() {
                         <p className="text-sm text-gray-500 font-medium">{t('dashboard.staff')}</p>
                         <p className="text-3xl font-bold text-blue-600 mt-1">{stats.staff}</p>
                         <p className="text-xs text-blue-600 mt-2 flex items-center gap-1">
-                            {t('dashboard.viewStaff')}
-                            <FaArrowRight className="w-3 h-3" />
+                            <span>{t('dashboard.viewStaff')}</span>
+                            <ArrowIcon className="w-3 h-3" />
                         </p>
                     </div>
 
@@ -199,8 +207,8 @@ export default function Dashboard() {
                         <p className="text-sm text-gray-500 font-medium">{t('dashboard.customers')}</p>
                         <p className="text-3xl font-bold text-green-600 mt-1">{stats.customers}</p>
                         <p className="text-xs text-green-600 mt-2 flex items-center gap-1">
-                            {t('dashboard.viewCustomers')}
-                            <FaArrowRight className="w-3 h-3" />
+                            <span>{t('dashboard.viewCustomers')}</span>
+                            <ArrowIcon className="w-3 h-3" />
                         </p>
                     </div>
 
@@ -217,8 +225,8 @@ export default function Dashboard() {
                         <p className="text-sm text-gray-500 font-medium">{t('dashboard.saraf')}</p>
                         <p className="text-3xl font-bold text-yellow-600 mt-1">{stats.saraf}</p>
                         <p className="text-xs text-yellow-600 mt-2 flex items-center gap-1">
-                            {t('dashboard.viewSaraf')}
-                            <FaArrowRight className="w-3 h-3" />
+                            <span>{t('dashboard.viewSaraf')}</span>
+                            <ArrowIcon className="w-3 h-3" />
                         </p>
                     </div>
                 </div>

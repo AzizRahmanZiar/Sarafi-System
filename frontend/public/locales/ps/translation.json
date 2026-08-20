@@ -2,9 +2,10 @@
   "app": {
     "name": "صرافي"
   },
-  "common": {
+   "common": {
     "loading": "بار کول...",
     "save": "خوندي کول",
+    "saveChanges": "بدلونونه خوندي کړئ",
     "cancel": "لغوه کول",
     "delete": "ړنګول",
     "edit": "سمول",
@@ -30,9 +31,13 @@
     "admin": "مدیر",
     "staff": "کارکوونکی",
     "customer": "پیریدونکی",
-    "saraf": "صراف"
+    "saraf": "صراف",
+    "create": "جوړول",
+    "update": "تازه کول",
+    "close": "تړل"
   },
   "navigation": {
+    "transactions": "معاملې",
     "dashboard": "ډشبورډ",
     "accounts": "حسابونه",
     "settings": "ترتیبات",
@@ -96,7 +101,6 @@
     "passwordOptional": "پاسورډ",
     "selectRole": "نقش غوره کړئ",
     "saving": "خوندي کول...",
-    "cancel": "لغوه کول",
     "creating": "جوړول...",
     "updating": "تازه کول..."
   },
@@ -125,9 +129,40 @@
     "createStaffFirst": "لومړی د حسابونو پاڼې څخه کارکوونکي جوړ کړئ.",
     "selectStaff": "د اجازو مدیریت لپاره یو کارکوونکی غوره کړئ.",
     "activePermissions": "فعال ({{count}})",
-    "nonePermissions": "هیڅ"
+    "nonePermissions": "هیڅ",
+    "currency": {
+      "title": "د اسعارو نرخونه",
+      "addCurrency": "اسعارو اضافه کړئ",
+      "editCurrency": "اسعارو سمول",
+      "defaultCurrency": "ډیفالټ اسعارو",
+      "rates": "د تبادلې نرخونه",
+      "addRate": "نرخ اضافه کړئ",
+      "removeRate": "نرخ لرې کړئ",
+      "rateFor": "نرخ د",
+      "noRates": "هیڅ نرخ اضافه شوی نه دی",
+      "rateLabel": "1 {{code}} = ?",
+      "defaultLabel": "ډیفالټ اسعارو (محلي نوم)",
+      "baseRate": "بنسټیز نرخ",
+      "exchangeRates": "د تبادلې نرخونه",
+      "currencyName": "د اسعارو نوم",
+      "currencyCode": "د اسعارو کوډ",
+      "symbol": "سمبول",
+      "codePlaceholder": "د بیلګې په توګه USD",
+      "namePlaceholder": "د بیلګې په توګه امریکایي ډالر",
+      "symbolPlaceholder": "د بیلګې په توګه $، €، £",
+      "ratePlaceholder": "د بیلګې په توګه ۶۵",
+      "setDefault": "د ډیفالټ په توګه تنظیم کړئ",
+      "deleteConfirm": "آیا تاسو ډاډه یاست چې غواړئ {{name}} ړنګ کړئ؟",
+      "createdSuccess": "اسعارو په بریالیتوب سره جوړ شو!",
+      "updatedSuccess": "اسعارو په بریالیتوب سره تازه شو!",
+      "deletedSuccess": "اسعارو په بریالیتوب سره ړنګ شو!",
+      "defaultUpdated": "ډیفالټ اسعارو تازه شو!",
+      "failedToLoad": "د اسعارو بارول ناکام شول",
+      "failedToCreate": "د اسعارو جوړول ناکام شول",
+      "failedToUpdate": "د اسعارو تازه کول ناکام شول",
+      "failedToDelete": "د اسعارو ړنګول ناکام شول"
+    }
   },
-  
   "login": {
     "title": "ننوتل",
     "description": "خپل حساب ته ننوځئ",
@@ -146,7 +181,6 @@
     "emailLabel": "بریښنالیک",
     "passwordLabel": "پاسورډ"
   },
-
   "register": {
     "title": "د مدیر ثبتول",
     "description": "د لومړي مدیر په توګه ثبت کړئ",
@@ -168,11 +202,11 @@
     "passwordLabel": "پاسورډ",
     "confirmPasswordLabel": "پاسورډ تایید کړئ"
   },
-  "toast": {
-    "userCreated": "{{role}} بریالی شو!",
-    "userUpdated": "کاروونکی بریالی شو!",
-    "userDeleted": "کاروونکی \"{{name}}\" بریالی شو!",
-    "permissionsUpdated": "د {{name}} اجازې تازه شوې!",
+    "toast": {
+    "userCreated": "کاروونکی {{role}} په بریالیتوب سره جوړ شو!",
+    "userUpdated": "کاروونکی په بریالیتوب سره تازه شو!",
+    "userDeleted": "کاروونکی \"{{name}}\" په بریالیتوب سره ړنګ شو!",
+    "permissionsUpdated": "د {{name}} اجازې په بریالیتوب سره تازه شوې!",
     "logoutSuccess": "وتل بریالي شول!",
     "loginSuccess": "ننوتل بریالي شول!",
     "userNotFound": "کاروونکی ونه موندل شو",
@@ -184,7 +218,14 @@
     "unauthorized": "اجازه نشته. تاسو د دې عمل کولو اجازه نه لرئ.",
     "somethingWentWrong": "یوه تېروتنه پیښ شوه. مهرباني وکړئ وروسته بیا هڅه وکړئ.",
     "failedToLoad": "د کاروونکو بارول ناکام شول",
-    "failedToLoadStaff": "د کارکوونکو بارول ناکام شول"
+    "failedToLoadStaff": "د کارکوونکو بارول ناکام شول",
+    "currencyCreated": "اسعارو په بریالیتوب سره جوړ شو!",
+    "currencyUpdated": "اسعارو په بریالیتوب سره تازه شو!",
+    "currencyDeleted": "اسعارو په بریالیتوب سره ړنګ شو!",
+    "defaultCurrencyUpdated": "ډیفالټ اسعارو په بریالیتوب سره تازه شو!",
+    "staffCreated": "کارکوونکی {{name}} په بریالیتوب سره جوړ شو!",
+    "customerCreated": "پیریدونکی {{name}} په بریالیتوب سره جوړ شو!",
+    "sarafCreated": "صراف {{name}} په بریالیتوب سره جوړ شو!"
   },
   "validation": {
     "fieldRequired": "دا ساحه اړینه ده",

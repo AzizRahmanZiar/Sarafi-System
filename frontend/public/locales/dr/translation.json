@@ -5,6 +5,7 @@
   "common": {
     "loading": "در حال بارگذاری...",
     "save": "ذخیره",
+    "saveChanges": "ذخیره تغییرات",
     "cancel": "لغو",
     "delete": "حذف",
     "edit": "ویرایش",
@@ -30,9 +31,13 @@
     "admin": "مدیر",
     "staff": "کارمند",
     "customer": "مشتری",
-    "saraf": "صراف"
+    "saraf": "صراف",
+    "create": "ایجاد",
+    "update": "به‌روزرسانی",
+    "close": "بستن"
   },
   "navigation": {
+    "transactions": "معاملات",
     "dashboard": "داشبورد",
     "accounts": "حساب‌ها",
     "settings": "تنظیمات",
@@ -96,7 +101,6 @@
     "passwordOptional": "رمز عبور",
     "selectRole": "نقش را انتخاب کنید",
     "saving": "در حال ذخیره...",
-    "cancel": "لغو",
     "creating": "در حال ایجاد...",
     "updating": "در حال به‌روزرسانی..."
   },
@@ -125,9 +129,40 @@
     "createStaffFirst": "ابتدا کارمندان را از صفحه حساب‌ها ایجاد کنید.",
     "selectStaff": "یک کارمند را برای مدیریت دسترسی‌های او انتخاب کنید.",
     "activePermissions": "فعال ({{count}})",
-    "nonePermissions": "هیچ"
+    "nonePermissions": "هیچ",
+    "currency": {
+      "title": "نرخ‌های ارز",
+      "addCurrency": "افزودن ارز",
+      "editCurrency": "ویرایش ارز",
+      "defaultCurrency": "ارز پیش‌فرض",
+      "rates": "نرخ‌های تبدیل",
+      "addRate": "افزودن نرخ",
+      "removeRate": "حذف نرخ",
+      "rateFor": "نرخ برای",
+      "noRates": "هیچ نرخی اضافه نشده است",
+      "rateLabel": "1 {{code}} = ?",
+      "defaultLabel": "ارز پیش‌فرض (محلي نوم)",
+      "baseRate": "نرخ پایه",
+      "exchangeRates": "نرخ‌های تبدیل",
+      "currencyName": "نام ارز",
+      "currencyCode": "کد ارز",
+      "symbol": "نماد",
+      "codePlaceholder": "مثلاً USD",
+      "namePlaceholder": "مثلاً دلار آمریکا",
+      "symbolPlaceholder": "مثلاً $، €، £",
+      "ratePlaceholder": "مثلاً ۶۵",
+      "setDefault": "تنظیم به عنوان پیش‌فرض",
+      "deleteConfirm": "آیا مطمئن هستید که می‌خواهید {{name}} را حذف کنید؟",
+      "createdSuccess": "ارز با موفقیت ایجاد شد!",
+      "updatedSuccess": "ارز با موفقیت به‌روزرسانی شد!",
+      "deletedSuccess": "ارز با موفقیت حذف شد!",
+      "defaultUpdated": "ارز پیش‌فرض به‌روزرسانی شد!",
+      "failedToLoad": "بارگذاری ارزها ناموفق بود",
+      "failedToCreate": "ایجاد ارز ناموفق بود",
+      "failedToUpdate": "به‌روزرسانی ارز ناموفق بود",
+      "failedToDelete": "حذف ارز ناموفق بود"
+    }
   },
-  
   "login": {
     "title": "ورود",
     "description": "وارد حساب کاربری خود شوید",
@@ -146,7 +181,6 @@
     "emailLabel": "ایمیل",
     "passwordLabel": "رمز عبور"
   },
-
   "register": {
     "title": "ثبت‌نام مدیر",
     "description": "به عنوان اولین مدیر ثبت‌نام کنید",
@@ -169,10 +203,10 @@
     "confirmPasswordLabel": "تأیید رمز عبور"
   },
   "toast": {
-    "userCreated": "{{role}} با موفقیت ایجاد شد!",
+    "userCreated": "کاربر {{role}} با موفقیت ایجاد شد!",
     "userUpdated": "کاربر با موفقیت به‌روزرسانی شد!",
     "userDeleted": "کاربر \"{{name}}\" با موفقیت حذف شد!",
-    "permissionsUpdated": "دسترسی‌های {{name}} به‌روزرسانی شد!",
+    "permissionsUpdated": "دسترسی‌های {{name}} با موفقیت به‌روزرسانی شد!",
     "logoutSuccess": "خروج موفقیت‌آمیز!",
     "loginSuccess": "ورود موفقیت‌آمیز!",
     "userNotFound": "کاربر یافت نشد",
@@ -184,7 +218,14 @@
     "unauthorized": "غیرمجاز. شما اجازه انجام این عمل را ندارید.",
     "somethingWentWrong": "مشکلی پیش آمد. لطفاً بعداً دوباره تلاش کنید.",
     "failedToLoad": "بارگذاری کاربران ناموفق بود",
-    "failedToLoadStaff": "بارگذاری کارمندان ناموفق بود"
+    "failedToLoadStaff": "بارگذاری کارمندان ناموفق بود",
+    "currencyCreated": "ارز با موفقیت ایجاد شد!",
+    "currencyUpdated": "ارز با موفقیت به‌روزرسانی شد!",
+    "currencyDeleted": "ارز با موفقیت حذف شد!",
+    "defaultCurrencyUpdated": "ارز پیش‌فرض با موفقیت به‌روزرسانی شد!",
+    "staffCreated": "کارمند {{name}} با موفقیت ایجاد شد!",
+    "customerCreated": "مشتری {{name}} با موفقیت ایجاد شد!",
+    "sarafCreated": "صراف {{name}} با موفقیت ایجاد شد!"
   },
   "validation": {
     "fieldRequired": "این فیلد الزامی است",
