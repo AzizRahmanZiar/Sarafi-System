@@ -127,10 +127,13 @@
     "activePermissions": "فعال ({{count}})",
     "nonePermissions": "هیچ"
   },
+  
   "login": {
     "title": "ورود",
     "description": "وارد حساب کاربری خود شوید",
     "rememberMe": "مرا به خاطر بسپار",
+    "forgotPassword": "رمز عبور را فراموش کرده‌اید؟",
+    "forgotPasswordComingSoon": "قابلیت فراموشی رمز عبور به زودی اضافه می‌شود!",
     "invalidCredentials": "ایمیل یا رمز عبور اشتباه است.",
     "noAccount": "حساب ندارید؟",
     "onlyAdminStaff": "فقط مدیران و کارمندان می‌توانند وارد شوند.",
@@ -143,6 +146,7 @@
     "emailLabel": "ایمیل",
     "passwordLabel": "رمز عبور"
   },
+
   "register": {
     "title": "ثبت‌نام مدیر",
     "description": "به عنوان اولین مدیر ثبت‌نام کنید",

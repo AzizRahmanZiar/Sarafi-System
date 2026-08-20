@@ -1,29 +1,21 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
-import Form from "../components/form/Form";
-import Input from "../components/form/Input";
-import Label from "../components/form/Label";
-import Button from "../components/form/Button";
-import Toast from "../components/Toast";
+import { FaEnvelope, FaLock, FaUserPlus, FaEye, FaEyeSlash } from "react-icons/fa";
 import api from "../services/api";
-import { FaEnvelope, FaLock, FaUserPlus } from "react-icons/fa";
+import Toast from "../components/Toast";
 
 export default function Login() {
     const navigate = useNavigate();
     const { t, ready } = useTranslation();
     const [isChecking, setIsChecking] = useState(true);
-
-    const [formData, setFormData] = useState({
-        email: "",
-        password: "",
-    });
-
+    const [formData, setFormData] = useState({ email: "", password: "" });
     const [rememberMe, setRememberMe] = useState(false);
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState({});
     const [toast, setToast] = useState(null);
     const [adminExists, setAdminExists] = useState(true);
+    const [showPassword, setShowPassword] = useState(false);
 
     useEffect(() => {
         const token = localStorage.getItem("token");
@@ -35,17 +27,15 @@ export default function Login() {
     }, [navigate]);
 
     useEffect(() => {
-        const checkAdmin = async () => {
-            try {
-                const response = await api.get('/check-admin');
-                setAdminExists(response.data.exists);
-            } catch (error) {
-                console.error('Failed to check admin:', error);
-                setAdminExists(true);
-            }
-        };
-        
         if (!isChecking) {
+            const checkAdmin = async () => {
+                try {
+                    const response = await api.get('/check-admin');
+                    setAdminExists(response.data.exists);
+                } catch {
+                    setAdminExists(true);
+                }
+            };
             checkAdmin();
         }
     }, [isChecking]);
@@ -53,42 +43,21 @@ export default function Login() {
     useEffect(() => {
         const savedEmail = localStorage.getItem("rememberedEmail");
         if (savedEmail) {
-            setFormData(prev => ({
-                ...prev,
-                email: savedEmail
-            }));
+            setFormData(prev => ({ ...prev, email: savedEmail }));
             setRememberMe(true);
         }
     }, []);
 
-    const getText = (key, fallback) => {
-        return ready ? t(key) : fallback;
-    };
+    const getText = (key, fallback) => ready ? t(key) : fallback;
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData((prev) => ({
-            ...prev,
-            [name]: value,
-        }));
-        if (errors[name]) {
-            setErrors((prev) => ({
-                ...prev,
-                [name]: "",
-            }));
-        }
-    };
-
-    const handleRememberMeChange = (e) => {
-        setRememberMe(e.target.checked);
-        if (!e.target.checked) {
-            localStorage.removeItem("rememberedEmail");
-        }
+        setFormData(prev => ({ ...prev, [name]: value }));
+        if (errors[name]) setErrors(prev => ({ ...prev, [name]: "" }));
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
         if (loading) return;
 
         setLoading(true);
@@ -97,63 +66,23 @@ export default function Login() {
 
         try {
             const response = await api.post("/login", formData);
-
-            if (response.data.token) {
-                localStorage.setItem("token", response.data.token);
-            }
-
-            if (response.data.user) {
-                localStorage.setItem(
-                    "user",
-                    JSON.stringify(response.data.user)
-                );
-            }
-
+            
+            if (response.data.token) localStorage.setItem("token", response.data.token);
+            if (response.data.user) localStorage.setItem("user", JSON.stringify(response.data.user));
+            
             if (rememberMe) {
                 localStorage.setItem("rememberedEmail", formData.email);
             } else {
                 localStorage.removeItem("rememberedEmail");
             }
 
-            setToast({
-                message: getText('toast.loginSuccess', 'Login successful!'),
-                type: "success"
-            });
-
-            setTimeout(() => {
-                navigate("/dashboard", { replace: true });
-            }, 1500);
+            setToast({ message: getText('toast.loginSuccess', 'Welcome back!'), type: "success" });
+            setTimeout(() => navigate("/dashboard", { replace: true }), 1500);
 
         } catch (error) {
-            if (error.response?.status === 422) {
-                setErrors(error.response.data.errors || {});
-                setToast({
-                    message: getText('toast.pleaseCheckInput', 'Please check your input and try again.'),
-                    type: "error"
-                });
-            } else if (error.response?.status === 401) {
-                setErrors({
-                    email: [
-                        error.response.data.message ||
-                            getText('login.invalidCredentials', 'Invalid email or password.'),
-                    ],
-                });
-                setToast({
-                    message: error.response.data.message || getText('login.invalidCredentials', 'Invalid email or password.'),
-                    type: "error"
-                });
-            } else if (error.response?.status === 403) {
-                setToast({
-                    message: error.response.data.message || getText('login.onlyAdminStaff', 'Only admin and staff can login.'),
-                    type: "error"
-                });
-            } else {
-                setToast({
-                    message: getText('toast.somethingWentWrong', 'Something went wrong. Please try again later.'),
-                    type: "error"
-                });
-                console.error(error);
-            }
+            const msg = error.response?.data?.message || getText('toast.somethingWentWrong', 'Something went wrong.');
+            setToast({ message: msg, type: "error" });
+            if (error.response?.status === 422) setErrors(error.response.data.errors || {});
         } finally {
             setLoading(false);
         }
@@ -161,133 +90,134 @@ export default function Login() {
 
     if (isChecking) {
         return (
-            <div className="flex min-h-screen items-center justify-center bg-gray-100">
+            <div className="flex min-h-screen items-center justify-center bg-gray-50">
                 <div className="text-center">
-                    <div className="text-xl text-gray-600">{getText('common.loading', 'Loading...')}</div>
+                    <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
+                    <p className="mt-4 text-gray-500">{getText('common.loading', 'Loading...')}</p>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="flex min-h-screen items-center justify-center bg-gray-100 px-4" dir={document.documentElement.dir}>
-            {toast && (
-                <Toast
-                    message={toast.message}
-                    type={toast.type}
-                    onClose={() => setToast(null)}
-                />
-            )}
+        <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
+            {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
             
-            <div className="w-full max-w-md rounded-xl bg-white p-8 shadow-lg">
-                <div className="text-center mb-6">
-                    <h1 className="text-3xl font-bold text-gray-800">
-                        {getText('login.title', 'Login')}
-                    </h1>
-                    <p className="mt-2 text-gray-500">
-                        {getText('login.description', 'Login to your account')}
-                    </p>
+            <div className="w-full max-w-md">
+                <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+                    {/* Brand */}
+                    <div className="text-center mb-8">
+                        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-blue-600 text-white text-2xl font-bold shadow-sm mb-4">
+                            S
+                        </div>
+                        <h1 className="text-2xl font-bold text-gray-800">{getText('app.name', 'Sarafi')}</h1>
+                        <p className="text-gray-500 text-sm mt-1">{getText('login.description', 'Welcome back')}</p>
+                    </div>
+
+                    <form onSubmit={handleSubmit} className="space-y-5">
+                        {/* Email */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                                {getText('login.emailLabel', 'Email Address')}
+                            </label>
+                            <div className="relative">
+                                <FaEnvelope className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />
+                                <input
+                                    type="email"
+                                    name="email"
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                    placeholder={getText('login.enterEmail', 'Enter your email')}
+                                    className={`w-full pl-10 pr-4 py-3 rounded-lg border ${errors.email ? 'border-red-400' : 'border-gray-200'} bg-gray-50 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all text-sm`}
+                                    required
+                                />
+                            </div>
+                            {errors.email && <p className="mt-1.5 text-sm text-red-500">{errors.email[0]}</p>}
+                        </div>
+
+                        {/* Password */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                                {getText('login.passwordLabel', 'Password')}
+                            </label>
+                            <div className="relative">
+                                <FaLock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />
+                                <input
+                                    type={showPassword ? "text" : "password"}
+                                    name="password"
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    placeholder={getText('login.enterPassword', 'Enter your password')}
+                                    className={`w-full pl-10 pr-10 py-3 rounded-lg border ${errors.password ? 'border-red-400' : 'border-gray-200'} bg-gray-50 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all text-sm`}
+                                    required
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                                >
+                                    {showPassword ? <FaEyeSlash className="text-sm" /> : <FaEye className="text-sm" />}
+                                </button>
+                            </div>
+                            {errors.password && <p className="mt-1.5 text-sm text-red-500">{errors.password[0]}</p>}
+                        </div>
+
+                        {/* Remember Me & Forgot Password */}
+                        <div className="flex items-center justify-between">
+                            <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    checked={rememberMe}
+                                    onChange={(e) => setRememberMe(e.target.checked)}
+                                    className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                />
+                                {getText('login.rememberMe', 'Remember me')}
+                            </label>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setToast({ 
+                                        message: getText('login.forgotPasswordComingSoon', 'Forgot password functionality coming soon!'), 
+                                        type: "info" 
+                                    });
+                                }}
+                                className="text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors hover:underline"
+                            >
+                                {getText('login.forgotPassword', 'Forgot Password?')}
+                            </button>
+                        </div>
+
+                        {/* Submit */}
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="w-full py-3 px-4 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition-colors duration-200 disabled:opacity-70 disabled:cursor-not-allowed"
+                        >
+                            {loading ? (
+                                <span className="flex items-center justify-center gap-2">
+                                    <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                                    {getText('login.loggingIn', 'Signing in...')}
+                                </span>
+                            ) : (
+                                getText('login.loginButton', 'Sign In')
+                            )}
+                        </button>
+                    </form>
+
+                    {/* Register Link */}
+                    {!adminExists && (
+                        <p className="mt-6 text-center text-sm text-gray-500">
+                            {getText('login.noAccount', "Don't have an account?")}{" "}
+                            <Link to="/register" className="text-blue-600 hover:text-blue-700 font-medium">
+                                {getText('login.registerLink', 'Create one')}
+                            </Link>
+                        </p>
+                    )}
                 </div>
 
-                <Form onSubmit={handleSubmit} className="space-y-5">
-                    {/* Email */}
-                    <div>
-                        <Label htmlFor="email">
-                            {getText('login.emailLabel', 'Email')}
-                        </Label>
-
-                        <div className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <FaEnvelope className="h-5 w-5 text-gray-400" />
-                            </div>
-                            <Input
-                                id="email"
-                                name="email"
-                                type="email"
-                                placeholder={getText('login.enterEmail', 'Enter your email')}
-                                value={formData.email}
-                                onChange={handleChange}
-                                className="pl-10"
-                            />
-                        </div>
-
-                        {errors.email && (
-                            <p className="mt-1 text-sm text-red-500">
-                                {errors.email[0]}
-                            </p>
-                        )}
-                    </div>
-
-                    {/* Password */}
-                    <div>
-                        <Label htmlFor="password">
-                            {getText('login.passwordLabel', 'Password')}
-                        </Label>
-
-                        <div className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <FaLock className="h-5 w-5 text-gray-400" />
-                            </div>
-                            <Input
-                                id="password"
-                                name="password"
-                                type="password"
-                                placeholder={getText('login.enterPassword', 'Enter your password')}
-                                value={formData.password}
-                                onChange={handleChange}
-                                className="pl-10"
-                            />
-                        </div>
-
-                        {errors.password && (
-                            <p className="mt-1 text-sm text-red-500">
-                                {errors.password[0]}
-                            </p>
-                        )}
-                    </div>
-
-                    {/* Remember Me */}
-                    <div className="flex items-center">
-                        <input
-                            id="rememberMe"
-                            type="checkbox"
-                            checked={rememberMe}
-                            onChange={handleRememberMeChange}
-                            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                        />
-                        <Label 
-                            htmlFor="rememberMe"
-                            className="ml-2 text-sm text-gray-600 cursor-pointer"
-                        >
-                            {getText('login.rememberMe', 'Remember Me')}
-                        </Label>
-                    </div>
-
-                    {/* Login Button */}
-                    <Button
-                        type="submit"
-                        className="w-full"
-                        disabled={loading}
-                    >
-                        {loading ? getText('login.loggingIn', 'Logging in...') : getText('login.loginButton', 'Login')}
-                    </Button>
-
-                </Form>
-
-                {/* Register Link - Only show if no admin exists */}
-                {!adminExists && (
-                    <div className="mt-6 text-center text-sm text-gray-600">
-                        {getText('login.noAccount', "Don't have an account?")}{" "}
-                        <Link
-                            to="/register"
-                            className="font-medium text-blue-600 hover:underline inline-flex items-center gap-1"
-                        >
-                            <FaUserPlus className="w-3 h-3" />
-                            {getText('login.registerLink', 'Register')}
-                        </Link>
-                    </div>
-                )}
-
+                <p className="mt-6 text-center text-xs text-gray-400">
+                    {getText('app.name', 'Sarafi')} v1.0
+                </p>
             </div>
         </div>
     );

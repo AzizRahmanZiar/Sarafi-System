@@ -127,10 +127,13 @@
     "activePermissions": "Active ({{count}})",
     "nonePermissions": "None"
   },
+  
   "login": {
     "title": "Login",
     "description": "Login to your account",
     "rememberMe": "Remember Me",
+    "forgotPassword": "Forgot Password?",
+    "forgotPasswordComingSoon": "Forgot password functionality coming soon!",
     "invalidCredentials": "Invalid email or password.",
     "noAccount": "Don't have an account?",
     "onlyAdminStaff": "Only admin and staff can login.",
@@ -143,6 +146,7 @@
     "emailLabel": "Email",
     "passwordLabel": "Password"
   },
+
   "register": {
     "title": "Admin Registration",
     "description": "Register as the first admin user",

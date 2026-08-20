@@ -127,10 +127,13 @@
     "activePermissions": "فعال ({{count}})",
     "nonePermissions": "هیڅ"
   },
+  
   "login": {
     "title": "ننوتل",
     "description": "خپل حساب ته ننوځئ",
     "rememberMe": "ما په یاد وساتئ",
+    "forgotPassword": "پاسورډ هیر شوی؟",
+    "forgotPasswordComingSoon": "د پاسورډ هیرولو خصوصیت به ژر اضافه شي!",
     "invalidCredentials": "بریښنالیک یا پاسورډ سم نه دی.",
     "noAccount": "حساب نه لرئ؟",
     "onlyAdminStaff": "یوازې مدیران او کارکوونکي کولای شي ننوځي.",
@@ -143,6 +146,7 @@
     "emailLabel": "بریښنالیک",
     "passwordLabel": "پاسورډ"
   },
+
   "register": {
     "title": "د مدیر ثبتول",
     "description": "د لومړي مدیر په توګه ثبت کړئ",
